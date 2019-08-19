@@ -1,0 +1,30 @@
+{
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "Windows build",
+      "command": "C:/MinGW/mingw64/bin/g++.exe",
+      "args": [
+        "-g",
+        "${file}",
+        "-o",
+        "${fileDirname}\\${fileBasenameNoExtension}.exe",
+        "-w",
+        "-Wl,-subsystem,windows",
+        "-IC:\\MinGW\\SDLx64\\include\\SDL2",
+        "-LC:\\MinGW\\SDLx64\\lib",
+        "-lmingw64",
+        "-lSDL2main",
+        "-lSDL2"
+      ],
+      "options": {
+        "cwd": "C:/MinGW/mingw64/bin"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ],
+  "version": "2.0.0"
+}
