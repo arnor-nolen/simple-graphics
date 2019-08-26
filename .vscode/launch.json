@@ -9,27 +9,31 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/main",
+      "osx": {
+        "externalConsole": true,
+        "MIMode": "lldb"
+      },
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
-      "externalConsole": true,
-      "MIMode": "lldb",
-      "preLaunchTask": "Mac build"
+      "preLaunchTask": "Build"
     },
     {
       "name": "Windows debug",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/main.exe",
+      "windows": {
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "miDebuggerPath": "C:\\MinGW\\mingw64\\bin\\gdb.exe"
+      },
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "miDebuggerPath": "C:\\MinGW\\mingw64\\bin\\gdb.exe",
-      "preLaunchTask": "Windows build"
+      "preLaunchTask": "Build"
     }
   ]
 }

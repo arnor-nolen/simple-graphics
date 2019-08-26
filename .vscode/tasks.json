@@ -1,39 +1,45 @@
 {
   "tasks": [
+    // {
+    //   "type": "shell",
+    //   "label": "Mac build",
+    //   "command": "/usr/bin/clang++",
+    //   "args": [
+    //     "-g",
+    //     "main.cpp",
+    //     "-o",
+    //     "${workspaceRoot}/bin/main",
+    //     "-I${workspaceRoot}/include/SDL2",
+    //     "-L${workspaceRoot}/lib",
+    //     "-lSDL2"
+    //   ],
+    //   "group": {
+    //     "kind": "build",
+    //     "isDefault": true
+    //   }
+    // },
     {
       "type": "shell",
-      "label": "Mac build",
-      "command": "/usr/bin/clang++",
-      "args": [
-        "-g",
-        "main.cpp",
-        "-o",
-        "${workspaceRoot}/bin/main",
-        "-I${workspaceRoot}/include/SDL2",
-        "-L${workspaceRoot}/lib",
-        "-lSDL2"
-      ],
+      "label": "Build",
+      "windows": {
+        "command": "g++",
+        "args": [
+          "-g",
+          "main.cpp",
+          "-o",
+          "${workspaceRoot}/bin/main",
+          "-IC:/MinGW/SDLx64/include/SDL2",
+          "-LC:/MinGW/SDLx64/lib/",
+          "-lmingw32",
+          "-lSDL2main",
+          "-lSDL2"
+        ]
+      },
+      "problemMatcher": ["$gcc"],
       "group": {
         "kind": "build",
         "isDefault": true
       }
-    },
-    {
-      "type": "shell",
-      "label": "Windows build",
-      "command": "g++",
-      "args": [
-        "-g",
-        "main.cpp",
-        "-o",
-        "${workspaceRoot}/bin/main",
-        "-IC:/MinGW/SDLx64/include/SDL2",
-        "-LC:/MinGW/SDLx64/lib/",
-        "-lmingw32",
-        "-lSDL2main",
-        "-lSDL2"
-      ],
-      "problemMatcher": ["$gcc"]
     }
   ],
   "version": "2.0.0"
