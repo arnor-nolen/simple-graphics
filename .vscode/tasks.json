@@ -21,23 +21,17 @@
     {
       "type": "shell",
       "label": "Windows build",
-      "command": "",
+      "command": "g++",
       "args": [
         "-g",
-        "${file}",
+        "main.cpp",
         "-o",
-        "${fileDirname}\\${fileBasenameNoExtension}.exe",
-        "-w",
-        "-Wl,-subsystem,windows",
-        "-IC:\\MinGW\\SDLx64\\include\\SDL2",
-        "-LC:\\MinGW\\SDLx64\\lib",
-        "-lmingw64",
-        "-lSDL2main",
+        "${workspaceRoot}\\bin\\main",
+        "-I${workspaceRoot}\\include\\SDL2",
+        "-L${workspaceRoot}\\lib",
         "-lSDL2"
       ],
-      "options": {
-        "cwd": ""
-      }
+      "problemMatcher": ["$gcc"]
     }
   ],
   "version": "2.0.0"
