@@ -2,8 +2,26 @@
   "tasks": [
     {
       "type": "shell",
+      "label": "Mac build",
+      "command": "/usr/bin/clang++",
+      "args": [
+        "-g",
+        "main.cpp",
+        "-o",
+        "${workspaceRoot}/bin/main",
+        "-I${workspaceRoot}/include",
+        "-L${workspaceRoot}/lib",
+        "-lSDL2"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "shell",
       "label": "Windows build",
-      "command": "C:/MinGW/mingw64/bin/g++.exe",
+      "command": "",
       "args": [
         "-g",
         "${file}",
@@ -18,11 +36,7 @@
         "-lSDL2"
       ],
       "options": {
-        "cwd": "C:/MinGW/mingw64/bin"
-      },
-      "group": {
-        "kind": "build",
-        "isDefault": true
+        "cwd": ""
       }
     }
   ],
