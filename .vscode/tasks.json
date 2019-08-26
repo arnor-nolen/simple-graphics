@@ -1,26 +1,20 @@
 {
   "tasks": [
-    // {
-    //   "type": "shell",
-    //   "label": "Mac build",
-    //   "command": "/usr/bin/clang++",
-    //   "args": [
-    //     "-g",
-    //     "main.cpp",
-    //     "-o",
-    //     "${workspaceRoot}/bin/main",
-    //     "-I${workspaceRoot}/include/SDL2",
-    //     "-L${workspaceRoot}/lib",
-    //     "-lSDL2"
-    //   ],
-    //   "group": {
-    //     "kind": "build",
-    //     "isDefault": true
-    //   }
-    // },
     {
       "type": "shell",
       "label": "Build",
+      "osx": {
+        "command": "/usr/bin/clang++",
+        "args": [
+          "-g",
+          "main.cpp",
+          "-o",
+          "${workspaceRoot}/bin/main",
+          "-I/usr/local/Cellar/sdl2/2.0.9_1/include/SDL2",
+          "-L/usr/local/Cellar/sdl2/2.0.9_1/lib",
+          "-lSDL2"
+        ]
+      },
       "windows": {
         "command": "g++",
         "args": [
