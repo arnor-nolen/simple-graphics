@@ -9,7 +9,7 @@
         "main.cpp",
         "-o",
         "${workspaceRoot}/bin/main",
-        "-I${workspaceRoot}/include",
+        "-I${workspaceRoot}/include/SDL2",
         "-L${workspaceRoot}/lib",
         "-lSDL2"
       ],
