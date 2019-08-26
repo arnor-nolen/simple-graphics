@@ -26,9 +26,11 @@
         "-g",
         "main.cpp",
         "-o",
-        "${workspaceRoot}\\bin\\main",
-        "-I${workspaceRoot}\\include\\SDL2",
-        "-L${workspaceRoot}\\lib",
+        "${workspaceRoot}/bin/main",
+        "-IC:/MinGW/SDLx64/include/SDL2",
+        "-LC:/MinGW/SDLx64/lib/",
+        "-lmingw32",
+        "-lSDL2main",
         "-lSDL2"
       ],
       "problemMatcher": ["$gcc"]
