@@ -10,8 +10,8 @@
           "main.cpp",
           "-o",
           "${workspaceRoot}/bin/main",
-          "-I/usr/local/Cellar/sdl2/2.0.9_1/include/SDL2",
-          "-L/usr/local/Cellar/sdl2/2.0.9_1/lib",
+          "-I/usr/local/Cellar/sdl2/2.0.10/include/SDL2",
+          "-L/usr/local/Cellar/sdl2/2.0.10/lib",
           "-lSDL2"
         ]
       },
