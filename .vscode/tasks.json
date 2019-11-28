@@ -7,7 +7,12 @@
         "cwd": "${workspaceRoot}/build"
       },
       "command": "cmake",
-      "args": [".."],
+      "osx": {
+        "args": [".."]
+      },
+      "windows": {
+        "args": ["..", "-G", "MinGW Makefiles"]
+      },
       "problemMatcher": []
     },
     {
@@ -16,7 +21,12 @@
       "options": {
         "cwd": "${workspaceRoot}/build"
       },
-      "command": "make",
+      "osx": {
+        "command": "make"
+      },
+      "windows": {
+        "command": "mingw32-make"
+      },
       "dependsOn": ["cmake"]
     }
   ],
