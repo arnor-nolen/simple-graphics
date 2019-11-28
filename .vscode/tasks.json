@@ -2,30 +2,22 @@
   "tasks": [
     {
       "type": "shell",
-      "label": "Build",
-      "osx": {
-        "command": "cmake",
-        "args": [".", "-Bbuild"]
+      "label": "cmake",
+      "options": {
+        "cwd": "${workspaceRoot}/build"
       },
-      "windows": {
-        "command": "g++",
-        "args": [
-          "-g",
-          "main.cpp",
-          "-o",
-          "${workspaceRoot}/bin/main",
-          "-IC:/MinGW/SDLx64/include/SDL2",
-          "-LC:/MinGW/SDLx64/lib/",
-          "-lmingw32",
-          "-lSDL2main",
-          "-lSDL2"
-        ]
+      "command": "cmake",
+      "args": [".."],
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "make",
+      "options": {
+        "cwd": "${workspaceRoot}/build"
       },
-      "problemMatcher": ["$gcc"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "command": "make",
+      "dependsOn": ["cmake"]
     }
   ],
   "version": "2.0.0"

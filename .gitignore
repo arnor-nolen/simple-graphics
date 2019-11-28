@@ -1,8 +1,5 @@
-# Cmake build directory
-/build/*
-
-# Compiled binaries
-/bin/*
+# MacOS
+.DS_Store
 
 # Prerequisites
 *.d
