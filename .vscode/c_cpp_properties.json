@@ -1,29 +1,37 @@
 {
-  "configurations": [
-    {
-      "name": "Win32",
-      "includePath": ["${workspaceFolder}/**", "C://MinGW/SDLx64/include/SDL2"],
-      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
-      "compilerPath": "C:/MinGW/mingw64/bin/g++.exe",
-      "cStandard": "c11",
-      "cppStandard": "c++17",
-      "intelliSenseMode": "gcc-x64"
-    },
-    {
-      "name": "Mac",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "/usr/local/Cellar/sdl2/2.0.10/include/SDL2"
-      ],
-      "defines": [],
-      "macFrameworkPath": [
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
-      ],
-      "compilerPath": "/usr/bin/clang++",
-      "cStandard": "c11",
-      "cppStandard": "c++17",
-      "intelliSenseMode": "clang-x64"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C://MinGW/SDLx64/include/SDL2"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/MinGW/mingw64/bin/g++.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/local/Cellar/sdl2/2.0.10/include/SDL2",
+                "/usr/local/Cellar/glew/2.1.0/include/"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
 }

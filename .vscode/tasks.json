@@ -4,16 +4,8 @@
       "type": "shell",
       "label": "Build",
       "osx": {
-        "command": "/usr/bin/clang++",
-        "args": [
-          "-g",
-          "main.cpp",
-          "-o",
-          "${workspaceRoot}/bin/main",
-          "-I/usr/local/Cellar/sdl2/2.0.10/include/SDL2",
-          "-L/usr/local/Cellar/sdl2/2.0.10/lib",
-          "-lSDL2"
-        ]
+        "command": "cmake",
+        "args": [".", "-Bbuild"]
       },
       "windows": {
         "command": "g++",
