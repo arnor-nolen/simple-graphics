@@ -11,7 +11,13 @@
         "args": [".."]
       },
       "windows": {
-        "args": ["..", "-G", "MinGW Makefiles"]
+        "args": [
+          "..",
+          "-G",
+          "MinGW Makefiles",
+          "-DCMAKE_LIBRARY_PATH='C:/MinGW/SDLx64/lib/'",
+          "-DCMAKE_INCLUDE_PATH='C:/MinGW/SDLx64/include/SDL2'"
+        ]
       }
     },
     {
