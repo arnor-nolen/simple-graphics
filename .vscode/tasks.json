@@ -12,8 +12,7 @@
       },
       "windows": {
         "args": ["..", "-G", "MinGW Makefiles"]
-      },
-      "problemMatcher": []
+      }
     },
     {
       "type": "shell",
@@ -27,7 +26,11 @@
       "windows": {
         "command": "mingw32-make"
       },
-      "dependsOn": ["cmake"]
+      "dependsOn": ["cmake"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ],
   "version": "2.0.0"
