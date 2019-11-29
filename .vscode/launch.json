@@ -1,39 +1,17 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Mac debug",
-      "type": "cppdbg",
+      "name": "debug",
+      "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/main",
+      "program": "${workspaceFolder}/bin/simple-graphics",
       "osx": {
-        "externalConsole": true,
-        "MIMode": "lldb"
+        "terminal": "external"
       },
       "args": [],
-      "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
-      "environment": [],
-      "preLaunchTask": "Build"
-    },
-    {
-      "name": "Windows debug",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/main.exe",
-      "windows": {
-        "externalConsole": false,
-        "MIMode": "gdb",
-        "miDebuggerPath": "C:\\MinGW\\mingw64\\bin\\gdb.exe"
-      },
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "preLaunchTask": "Build"
+      "preLaunchTask": "make"
     }
   ]
 }

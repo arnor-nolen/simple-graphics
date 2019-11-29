@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -10,6 +11,10 @@ int main(int argc, char *argv[]) {
   SDL_Window *window =
       SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
   SDL_GLContext context = SDL_GL_CreateContext(window);
+
+  glewExperimental = GL_TRUE;
+  glewInit();
+
   SDL_Event windowEvent;
   while (true) {
     if (SDL_PollEvent(&windowEvent)) {
