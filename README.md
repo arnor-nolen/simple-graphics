@@ -1,5 +1,7 @@
 # Simple graphics
 
-Simple project drawing BMP image to the screen and polling events to close on `SDL_Quit`.
+Simple `SDL2` and `OpenGL` example.
 
-Mainly used as a boilerplate code to set up SDL2 for C++.
+To install, use `cmake` with additional arguments. An example of how to build the project is provided in `tasks.json`.
+
+To clean folders after `cmake`, use `git clean -d -f -x`.
