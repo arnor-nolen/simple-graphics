@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <iostream>
 
 int main(int argc, char *argv[]) {
   SDL_Init(SDL_INIT_VIDEO);
@@ -14,6 +15,11 @@ int main(int argc, char *argv[]) {
 
   glewExperimental = GL_TRUE;
   glewInit();
+
+  GLuint vertexBuffer;
+  glGenBuffers(1, &vertexBuffer);
+
+  std::cout << vertexBuffer << std::endl;
 
   SDL_Event windowEvent;
   while (true) {
