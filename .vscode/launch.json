@@ -6,9 +6,7 @@
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/bin/simple-graphics",
-      "osx": {
-        "terminal": "external"
-      },
+      "terminal": "external",
       "args": [],
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "make"
