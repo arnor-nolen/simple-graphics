@@ -1,28 +1,10 @@
 #include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
-
-// Shader sources
-const GLchar *vertexSource = R"glsl(
-    #version 150 core
-    in vec2 position;
-    in vec3 color;
-    out vec3 Color;
-    void main()
-    {
-        Color = color;
-        gl_Position = vec4(position, 0.0, 1.0);
-    }
-)glsl";
-const GLchar *fragmentSource = R"glsl(
-    #version 150 core
-    in vec3 Color;
-    out vec4 outColor;
-    void main()
-    {
-        outColor = vec4(Color, 1.0);
-    }
-)glsl";
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 int main(int argc, char *argv[]) {
   SDL_Init(SDL_INIT_VIDEO);
@@ -69,14 +51,23 @@ int main(int argc, char *argv[]) {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements,
                GL_STATIC_DRAW);
 
+  // Reading shaders from files
+  std::stringstream vert_shader_source, frag_shader_source;
+  std::ifstream vert_shader("./src/shaders/shader.vert");
+  std::ifstream frag_shader("./src/shaders/shader.frag");
+  vert_shader_source << vert_shader.rdbuf();
+  frag_shader_source << frag_shader.rdbuf();
+  const char *vert_shader_ptr = vert_shader_source.str().c_str();
+  const char *frag_shader_ptr = frag_shader_source.str().c_str();
+
   // Create and compile the vertex shader
   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexSource, NULL);
+  glShaderSource(vertexShader, 1, &vert_shader_ptr, NULL);
   glCompileShader(vertexShader);
 
   // Create and compile the fragment shader
   GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+  glShaderSource(fragmentShader, 1, &frag_shader_ptr, NULL);
   glCompileShader(fragmentShader);
 
   // Link the vertex and fragment shader into a shader program
