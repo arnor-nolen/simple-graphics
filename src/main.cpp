@@ -3,6 +3,7 @@
 #include <SDL_opengl.h>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -152,6 +153,17 @@ int main(int argc, char *argv[]) {
   glEnableVertexAttribArray(colAttrib);
   glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                         (void *)(2 * sizeof(float)));
+
+  // Calculate MVP matrix
+  glm::mat4 projection_matrix =
+      glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+  glm::mat4 view_matrix =
+      glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+  glm::mat4 model_matrix = glm::mat4(1.0f);
+  glm::mat4 mvp_matrix = projection_matrix * view_matrix * model_matrix;
+
+  GLuint matrix_uniform = glGetUniformLocation(shaderProgram, "mvp_matrix");
+  glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
 
   SDL_Event windowEvent;
   while (true) {
