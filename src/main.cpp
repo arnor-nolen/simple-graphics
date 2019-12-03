@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <fstream>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -69,7 +70,6 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   glAttachShader(shaderProgram, fragmentShader);
   glBindFragDataLocation(shaderProgram, 0, "outColor");
   glLinkProgram(shaderProgram);
-  glUseProgram(shaderProgram);
 
   // Check the program
   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
@@ -140,7 +140,8 @@ int main(int argc, char *argv[]) {
 
   // Reading shaders from files
   GLint shaderProgram =
-      load_shaders("./src/shaders/shader1.vert", "./src/shaders/shader2.frag");
+      load_shaders("./src/shaders/shader.vert", "./src/shaders/shader.frag");
+  glUseProgram(shaderProgram);
 
   // Specify the layout of the vertex data
   GLint posAttrib = glGetAttribLocation(shaderProgram, "position");

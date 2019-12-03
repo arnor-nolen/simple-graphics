@@ -11,7 +11,7 @@
         "args": [
           "..",
           "-DCMAKE_LIBRARY_PATH='/usr/local/Cellar/sdl2/2.0.10/lib;/usr/local/Cellar/glew/2.1.0/lib'",
-          "-DCMAKE_INCLUDE_PATH='/usr/local/Cellar/sdl2/2.0.10/include/SDL2;/usr/local/Cellar/glew/2.1.0/include/'"
+          "-DCMAKE_INCLUDE_PATH='/usr/local/Cellar/sdl2/2.0.10/include/SDL2;/usr/local/Cellar/glew/2.1.0/include/;/usr/local/Cellar/glm/0.9.9.5/include/'"
         ]
       },
       "windows": {
