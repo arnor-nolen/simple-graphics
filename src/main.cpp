@@ -104,8 +104,13 @@ int main(int argc, char *argv[]) {
       SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
   SDL_GLContext context = SDL_GL_CreateContext(window);
 
+  // Enable GLEW
   glewExperimental = GL_TRUE;
   glewInit();
+
+  // Enable depth test
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
 
   // Create Vertex Array Object
   GLuint vao;
@@ -120,14 +125,14 @@ int main(int argc, char *argv[]) {
   glGenBuffers(1, &ebo);
 
   float vertices[] = {
-      -0.5f, -0.5f, 0.5f,  1.0f, 1.0f, 1.0f, // Forward bottom-left
-      -0.5f, 0.5f,  0.5f,  1.0f, 1.0f, 1.0f, // Forward top-left
-      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f, // Forward top-right
-      0.5f,  -0.5f, 0.5f,  1.0f, 1.0f, 1.0f, // Forward bottom-right
-      -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Back bottom-left
-      -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f, 1.0f, // Back top-left
-      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 1.0f, // Back top-right
-      0.5f,  -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Back bottom-right
+      -0.5f, -0.5f, 0.5f,  0.583f, 0.771f, 0.014f, // Forward bottom-left
+      -0.5f, 0.5f,  0.5f,  0.609f, 0.115f, 0.436f, // Forward top-left
+      0.5f,  0.5f,  0.5f,  0.327f, 0.483f, 0.844f, // Forward top-right
+      0.5f,  -0.5f, 0.5f,  0.822f, 0.569f, 0.201f, // Forward bottom-right
+      -0.5f, -0.5f, -0.5f, 0.602f, 0.223f, 0.310f, // Back bottom-left
+      -0.5f, 0.5f,  -0.5f, 0.747f, 0.185f, 0.597f, // Back top-left
+      0.5f,  0.5f,  -0.5f, 0.770f, 0.761f, 0.559f, // Back top-right
+      0.5f,  -0.5f, -0.5f, 0.971f, 0.572f, 0.833f, // Back bottom-right
   };
 
   GLuint elements[] = {
@@ -181,7 +186,7 @@ int main(int argc, char *argv[]) {
     }
     // Clear the screen to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw a triangle from the 3 vertices
     glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
