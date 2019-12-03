@@ -120,17 +120,25 @@ int main(int argc, char *argv[]) {
   glGenBuffers(1, &ebo);
 
   float vertices[] = {
-      -0.5f, 0.5f,  1.0f, 0.0f,
-      0.0f, // Top-left
-      0.5f,  0.5f,  0.0f, 1.0f,
-      0.0f, // Top-right
-      0.5f,  -0.5f, 0.0f, 0.0f,
-      1.0f, // Bottom-right
-      -0.5f, -0.5f, 1.0f, 1.0f,
-      1.0f // Bottom-left
+      -0.5f, -0.5f, 0.5f,  1.0f, 1.0f, 1.0f, // Forward bottom-left
+      -0.5f, 0.5f,  0.5f,  1.0f, 1.0f, 1.0f, // Forward top-left
+      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f, // Forward top-right
+      0.5f,  -0.5f, 0.5f,  1.0f, 1.0f, 1.0f, // Forward bottom-right
+      -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Back bottom-left
+      -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f, 1.0f, // Back top-left
+      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 1.0f, // Back top-right
+      0.5f,  -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Back bottom-right
   };
 
-  GLuint elements[] = {0, 1, 2, 2, 3, 0};
+  GLuint elements[] = {
+      0, 3, 1, 1, 3, 2, // Front
+      5, 7, 4, 5, 6, 7, // Back
+      0, 1, 4, 5, 4, 1, // Left
+      2, 3, 7, 2, 7, 6, // Right
+      5, 1, 2, 6, 5, 2, // Top
+      4, 1, 0, 4, 7, 1  // Bottom
+
+  };
 
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -147,12 +155,12 @@ int main(int argc, char *argv[]) {
   // Specify the layout of the vertex data
   GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
   glEnableVertexAttribArray(posAttrib);
-  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 
   GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
   glEnableVertexAttribArray(colAttrib);
-  glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
-                        (void *)(2 * sizeof(float)));
+  glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
 
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
@@ -176,7 +184,7 @@ int main(int argc, char *argv[]) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Draw a triangle from the 3 vertices
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
