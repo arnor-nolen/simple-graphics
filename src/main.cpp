@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_opengl.h>
 #include <fstream>
 #include <glm/glm.hpp>
@@ -94,6 +95,21 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   return shaderProgram;
 }
 
+bool loadFromFile(std::string path) {
+  SDL_Texture *newTexture = NULL;
+  SDL_Surface *loadedSurface = IMG_Load(path.c_str());
+  if (loadedSurface == NULL) {
+    printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(),
+           IMG_GetError());
+  } else {
+    // SDL_SetColorKey(loadedSurface, SDL_TRUE,
+    //                 SDL_MapRGB(loadedSurface->format, 0x00, 0xFF, 0xFF));
+    int width = loadedSurface->w;
+    int height = loadedSurface->h;
+    SDL_FreeSurface(loadedSurface);
+  }
+}
+
 int main(int argc, char *argv[]) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -108,9 +124,15 @@ int main(int argc, char *argv[]) {
       SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
   SDL_GLContext context = SDL_GL_CreateContext(window);
 
-  // Enable GLEW
+  // Enable GLEW and SDL_image
   glewExperimental = GL_TRUE;
   glewInit();
+  int imgFlags = IMG_INIT_PNG;
+  if (!(IMG_Init(imgFlags) & imgFlags)) {
+    printf("SDL_image could not initialize! SDL_image Error: %s\n",
+           IMG_GetError());
+    return 1;
+  }
 
   // Enable depth test and antialiasing
   glEnable(GL_DEPTH_TEST);
@@ -202,6 +224,7 @@ int main(int argc, char *argv[]) {
   glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
 
+  IMG_Quit();
   SDL_GL_DeleteContext(context);
   SDL_Quit();
   return 0;
