@@ -6,7 +6,8 @@
         "${workspaceFolder}/**",
         "C://MinGW/SDLx64/include/SDL2",
         "C://MinGW/glew/include",
-        "C://MinGW/glm"
+        "C://MinGW/glm",
+        "C://MinGW/SDL_image/include/SDL2"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "compilerPath": "C:/MinGW/mingw64/bin/g++.exe",

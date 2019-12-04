@@ -108,6 +108,7 @@ bool loadFromFile(std::string path) {
     int height = loadedSurface->h;
     SDL_FreeSurface(loadedSurface);
   }
+  return true;
 }
 
 int main(int argc, char *argv[]) {

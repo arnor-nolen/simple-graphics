@@ -26,4 +26,4 @@ endif()
 add_executable (${PROJECT_NAME} src/main.cpp)
 # Use c++17 standard
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-target_link_libraries(${PROJECT_NAME} ${EXTRA_LINKER_FLAGS} SDL2)
+target_link_libraries(${PROJECT_NAME} ${EXTRA_LINKER_FLAGS} SDL2 SDL2_image)
