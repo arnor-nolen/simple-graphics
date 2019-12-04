@@ -15,6 +15,7 @@ add_compile_options(-g)
 
 # Set platform-specific stuff
 if (WIN32)
+    # Add "-mwindows" flag for hiding the console
     set(EXTRA_LINKER_FLAGS mingw32 SDL2main opengl32 glew32)
 elseif(APPLE)
     set(EXTRA_LINKER_FLAGS "-framework opengl" glew)
