@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_opengl.h>
+#include <chrono>
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -165,7 +166,7 @@ int main(int argc, char *argv[]) {
   // Enable GLEW and SDL_image
   glewExperimental = GL_TRUE;
   glewInit();
-  int imgFlags = IMG_INIT_PNG;
+  int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
   if (!(IMG_Init(imgFlags) & imgFlags)) {
     printf("SDL_image could not initialize! SDL_image Error: %s\n",
            IMG_GetError());
@@ -178,7 +179,7 @@ int main(int argc, char *argv[]) {
   glDepthFunc(GL_LESS);
 
   // Load resources
-  load_image("./resources/bricks.png");
+  load_image("./resources/bricks.jpg");
 
   // Create Vertex Array Object
   GLuint vao;
@@ -194,31 +195,31 @@ int main(int argc, char *argv[]) {
 
   float vertices[] = {
       // Position, Color, UV
-      -0.5f,  -0.5f,  0.5f, 0.583f,
-      0.771f, 0.014f, 0.0f, 0.0f, // Forward bottom-left
-      -0.5f,  0.5f,   0.5f, 0.609f,
-      0.115f, 0.436f, 0.0f, 1.0f, // Forward top-left
-      0.5f,   0.5f,   0.5f, 0.327f,
-      0.483f, 0.844f, 1.0f, 1.0f, // Forward top-right
-      0.5f,   -0.5f,  0.5f, 0.822f,
-      0.569f, 0.201f, 1.0f, 0.0f, // Forward bottom-right
-                                  // -0.5f,  -0.5f,  -0.5f, 0.602f,
-      // 0.223f, 0.310f, 0.0f,  0.0f, // Back bottom-left
-      // -0.5f,  0.5f,   -0.5f, 0.747f,
-      // 0.185f, 0.597f, 0.0f,  0.0f, // Back top-left
-      // 0.5f,   0.5f,   -0.5f, 0.770f,
-      // 0.761f, 0.559f, 0.0f,  0.0f, // Back top-right
-      // 0.5f,   -0.5f,  -0.5f, 0.971f,
-      // 0.572f, 0.833f, 0.0f,  0.0f, // Back bottom-right
+      -0.5f,  -0.5f,  0.5f,  0.583f,
+      0.771f, 0.014f, 0.0f,  0.0f, // Forward bottom-left
+      -0.5f,  0.5f,   0.5f,  0.609f,
+      0.115f, 0.436f, 0.0f,  1.0f, // Forward top-left
+      0.5f,   0.5f,   0.5f,  0.327f,
+      0.483f, 0.844f, 1.0f,  1.0f, // Forward top-right
+      0.5f,   -0.5f,  0.5f,  0.822f,
+      0.569f, 0.201f, 1.0f,  0.0f, // Forward bottom-right
+      -0.5f,  -0.5f,  -0.5f, 0.602f,
+      0.223f, 0.310f, 0.0f,  0.0f, // Back bottom-left
+      -0.5f,  0.5f,   -0.5f, 0.747f,
+      0.185f, 0.597f, 0.0f,  0.0f, // Back top-left
+      0.5f,   0.5f,   -0.5f, 0.770f,
+      0.761f, 0.559f, 0.0f,  0.0f, // Back top-right
+      0.5f,   -0.5f,  -0.5f, 0.971f,
+      0.572f, 0.833f, 0.0f,  0.0f, // Back bottom-right
   };
 
   GLuint elements[] = {
       0, 3, 1, 1, 3, 2, // Front
-                        // 5, 7, 4, 5, 6, 7, // Back
-                        // 0, 1, 4, 5, 4, 1, // Left
-                        // 2, 3, 7, 2, 7, 6, // Right
-                        // 5, 1, 2, 6, 5, 2, // Top
-                        // 4, 1, 0, 4, 7, 1  // Bottom
+      5, 7, 4, 5, 6, 7, // Back
+      0, 1, 4, 5, 4, 1, // Left
+      2, 3, 7, 2, 7, 6, // Right
+      5, 1, 2, 6, 5, 2, // Top
+      4, 1, 0, 4, 7, 1  // Bottom
 
   };
 
@@ -259,20 +260,30 @@ int main(int argc, char *argv[]) {
   glm::mat4 mvp_matrix = projection_matrix * view_matrix * model_matrix;
 
   GLuint matrix_uniform = glGetUniformLocation(shaderProgram, "mvp_matrix");
-  glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
 
   SDL_Event windowEvent;
+  auto t_start = std::chrono::high_resolution_clock::now();
   while (true) {
     if (SDL_PollEvent(&windowEvent)) {
       if (windowEvent.type == SDL_QUIT)
         break;
     }
+    auto t_now = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration_cast<std::chrono::duration<float>>(
+                     t_now - t_start)
+                     .count();
+    time *= 0.01f;
+
+    mvp_matrix = glm::rotate(mvp_matrix, time * glm::radians(180.0f),
+                             glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
+
     // Clear the screen to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw a triangle from the 3 vertices
-    glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
