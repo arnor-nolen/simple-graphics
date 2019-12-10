@@ -128,6 +128,7 @@ void load_image(std::string path) {
     // Create texture
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
+    // glActiveTexture(GL_TEXTURE0);
 
     // Load image
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
@@ -179,7 +180,7 @@ int main(int argc, char *argv[]) {
   glDepthFunc(GL_LESS);
 
   // Load resources
-  load_image("./resources/bricks.jpg");
+  load_image("./resources/nazeeboPepega.png");
 
   // Create Vertex Array Object
   GLuint vao;
