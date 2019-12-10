@@ -10,6 +10,25 @@
 #include <string>
 #include <vector>
 
+GLuint texture_id;
+
+SDL_Surface *flip_vertical(SDL_Surface *sfc) {
+  SDL_Surface *result = SDL_CreateRGBSurface(
+      sfc->flags, sfc->w, sfc->h, sfc->format->BytesPerPixel * 8,
+      sfc->format->Rmask, sfc->format->Gmask, sfc->format->Bmask,
+      sfc->format->Amask);
+  const auto pitch = sfc->pitch;
+  const auto pxlength = pitch * (sfc->h - 1);
+  auto pixels = static_cast<unsigned char *>(sfc->pixels) + pxlength;
+  auto rpixels = static_cast<unsigned char *>(result->pixels);
+  for (auto line = 0; line != sfc->h; ++line) {
+    memcpy(rpixels, pixels, pitch);
+    pixels -= pitch;
+    rpixels += pitch;
+  }
+  return result;
+}
+
 GLuint load_shaders(std::string vert_path, std::string frag_path) {
   std::stringstream vert_shader_source, frag_shader_source;
   std::ifstream vert_shader(vert_path);
@@ -70,7 +89,7 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   GLuint shaderProgram = glCreateProgram();
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, fragmentShader);
-  glBindFragDataLocation(shaderProgram, 0, "outColor");
+  glBindFragDataLocation(shaderProgram, 0, "program_color");
   glLinkProgram(shaderProgram);
 
   // Check the program
@@ -95,20 +114,36 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   return shaderProgram;
 }
 
-bool loadFromFile(std::string path) {
-  SDL_Texture *newTexture = NULL;
-  SDL_Surface *loadedSurface = IMG_Load(path.c_str());
-  if (loadedSurface == NULL) {
-    printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(),
-           IMG_GetError());
+void load_image(std::string path) {
+  SDL_Surface *loaded_surface = IMG_Load(path.c_str());
+  if (loaded_surface == NULL) {
+    std::cout << "Unable to load image " << path << "!" << std::endl
+              << "SDL_image error: " << IMG_GetError() << std::endl;
   } else {
-    // SDL_SetColorKey(loadedSurface, SDL_TRUE,
-    //                 SDL_MapRGB(loadedSurface->format, 0x00, 0xFF, 0xFF));
-    int width = loadedSurface->w;
-    int height = loadedSurface->h;
-    SDL_FreeSurface(loadedSurface);
+    // SDL and OpenGL have different coordinates, we have to flip the surface
+    SDL_Surface *flipped_surface = flip_vertical(loaded_surface);
+    SDL_FreeSurface(loaded_surface);
+
+    // Create texture
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+
+    // Load image
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
+                 flipped_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 flipped_surface->pixels);
+
+    SDL_FreeSurface(flipped_surface);
+
+    // Nice trilinear filtering with mipmaps
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
   }
-  return true;
+  return;
 }
 
 int main(int argc, char *argv[]) {
@@ -121,6 +156,8 @@ int main(int argc, char *argv[]) {
   // Enable 4x Antialiasing
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
+  // Create window
   SDL_Window *window =
       SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
   SDL_GLContext context = SDL_GL_CreateContext(window);
@@ -140,6 +177,9 @@ int main(int argc, char *argv[]) {
   glEnable(GL_MULTISAMPLE);
   glDepthFunc(GL_LESS);
 
+  // Load resources
+  load_image("./resources/bricks.png");
+
   // Create Vertex Array Object
   GLuint vao;
   glGenVertexArrays(1, &vao);
@@ -153,23 +193,32 @@ int main(int argc, char *argv[]) {
   glGenBuffers(1, &ebo);
 
   float vertices[] = {
-      -0.5f, -0.5f, 0.5f,  0.583f, 0.771f, 0.014f, // Forward bottom-left
-      -0.5f, 0.5f,  0.5f,  0.609f, 0.115f, 0.436f, // Forward top-left
-      0.5f,  0.5f,  0.5f,  0.327f, 0.483f, 0.844f, // Forward top-right
-      0.5f,  -0.5f, 0.5f,  0.822f, 0.569f, 0.201f, // Forward bottom-right
-      -0.5f, -0.5f, -0.5f, 0.602f, 0.223f, 0.310f, // Back bottom-left
-      -0.5f, 0.5f,  -0.5f, 0.747f, 0.185f, 0.597f, // Back top-left
-      0.5f,  0.5f,  -0.5f, 0.770f, 0.761f, 0.559f, // Back top-right
-      0.5f,  -0.5f, -0.5f, 0.971f, 0.572f, 0.833f, // Back bottom-right
+      // Position, Color, UV
+      -0.5f,  -0.5f,  0.5f, 0.583f,
+      0.771f, 0.014f, 0.0f, 0.0f, // Forward bottom-left
+      -0.5f,  0.5f,   0.5f, 0.609f,
+      0.115f, 0.436f, 0.0f, 1.0f, // Forward top-left
+      0.5f,   0.5f,   0.5f, 0.327f,
+      0.483f, 0.844f, 1.0f, 1.0f, // Forward top-right
+      0.5f,   -0.5f,  0.5f, 0.822f,
+      0.569f, 0.201f, 1.0f, 0.0f, // Forward bottom-right
+                                  // -0.5f,  -0.5f,  -0.5f, 0.602f,
+      // 0.223f, 0.310f, 0.0f,  0.0f, // Back bottom-left
+      // -0.5f,  0.5f,   -0.5f, 0.747f,
+      // 0.185f, 0.597f, 0.0f,  0.0f, // Back top-left
+      // 0.5f,   0.5f,   -0.5f, 0.770f,
+      // 0.761f, 0.559f, 0.0f,  0.0f, // Back top-right
+      // 0.5f,   -0.5f,  -0.5f, 0.971f,
+      // 0.572f, 0.833f, 0.0f,  0.0f, // Back bottom-right
   };
 
   GLuint elements[] = {
       0, 3, 1, 1, 3, 2, // Front
-      5, 7, 4, 5, 6, 7, // Back
-      0, 1, 4, 5, 4, 1, // Left
-      2, 3, 7, 2, 7, 6, // Right
-      5, 1, 2, 6, 5, 2, // Top
-      4, 1, 0, 4, 7, 1  // Bottom
+                        // 5, 7, 4, 5, 6, 7, // Back
+                        // 0, 1, 4, 5, 4, 1, // Left
+                        // 2, 3, 7, 2, 7, 6, // Right
+                        // 5, 1, 2, 6, 5, 2, // Top
+                        // 4, 1, 0, 4, 7, 1  // Bottom
 
   };
 
@@ -188,12 +237,18 @@ int main(int argc, char *argv[]) {
   // Specify the layout of the vertex data
   GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
   glEnableVertexAttribArray(posAttrib);
-  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 
-  GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+  GLint colAttrib = glGetAttribLocation(shaderProgram, "vertex_color");
   glEnableVertexAttribArray(colAttrib);
-  glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+  glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
                         (void *)(3 * sizeof(float)));
+  GLint uvAttrib = glGetAttribLocation(shaderProgram, "vertex_uv");
+  glEnableVertexAttribArray(uvAttrib);
+  glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+                        (void *)(6 * sizeof(float)));
+  GLuint texture_uniform = glGetUniformLocation(shaderProgram, "tex");
+  glUniform1i(texture_uniform, 0);
 
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
@@ -217,10 +272,11 @@ int main(int argc, char *argv[]) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw a triangle from the 3 vertices
-    glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
+  glDeleteTextures(1, &texture_id);
   glDeleteProgram(shaderProgram);
   glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
