@@ -5,6 +5,11 @@ project(simple-graphics)
 include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 
+# Find dependencies 
+find_package(SDL2 REQUIRED)
+find_package(SDL_image REQUIRED)
+find_package(glew REQUIRED)
+
 # Set binary output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
