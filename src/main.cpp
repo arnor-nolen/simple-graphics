@@ -13,6 +13,21 @@
 
 GLuint texture_id;
 
+struct Timer {
+  Timer() : start_time_(std::chrono::high_resolution_clock::now()) {}
+  ~Timer() { stop(); }
+
+  void stop() {
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+        end_time - start_time_);
+    std::cout << duration.count() * 0.001f << " ms\n";
+  }
+
+private:
+  std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
+};
+
 SDL_Surface *flip_vertical(SDL_Surface *sfc) {
   SDL_Surface *result = SDL_CreateRGBSurface(
       sfc->flags, sfc->w, sfc->h, sfc->format->BytesPerPixel * 8,
@@ -34,12 +49,12 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   std::stringstream vert_shader_source, frag_shader_source;
   std::ifstream vert_shader(vert_path);
   if (!vert_shader) {
-    std::cout << "Can't load vertex shader file!" << std::endl;
+    std::cout << "Can't load vertex shader file!\n";
     return 0;
   }
   std::ifstream frag_shader(frag_path);
   if (!frag_shader) {
-    std::cout << "Can't load fragment shader file!" << std::endl;
+    std::cout << "Can't load fragment shader file!\n";
     return 0;
   }
 
@@ -63,10 +78,10 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   if (info_log_length > 0) {
     std::vector<char> error_message(info_log_length + 1);
     glGetShaderInfoLog(vertexShader, info_log_length, NULL, &error_message[0]);
-    std::cout << "Error compiling vertex shader!" << std::endl;
+    std::cout << "Error compiling vertex shader!\n";
     for (auto &i : error_message)
       std::cout << i;
-    std::cout << std::endl;
+    std::cout << "\n";
   }
 
   // Create and compile the fragment shader
@@ -80,10 +95,10 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
     std::vector<char> error_message(info_log_length + 1);
     glGetShaderInfoLog(fragmentShader, info_log_length, NULL,
                        &error_message[0]);
-    std::cout << "Error compiling fragment shader!" << std::endl;
+    std::cout << "Error compiling fragment shader!\n";
     for (auto &i : error_message)
       std::cout << i;
-    std::cout << std::endl;
+    std::cout << "\n";
   }
 
   // Link the vertex and fragment shader into a shader program
@@ -100,10 +115,10 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
     std::vector<char> error_message(info_log_length + 1);
     glGetProgramInfoLog(shaderProgram, info_log_length, NULL,
                         &error_message[0]);
-    std::cout << "Error compiling shader program!" << std::endl;
+    std::cout << "Error compiling shader program!\n";
     for (auto &i : error_message)
       std::cout << i;
-    std::cout << std::endl;
+    std::cout << "\n";
   }
 
   glDetachShader(shaderProgram, vertexShader);
@@ -118,8 +133,8 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
 void load_image(std::string path) {
   SDL_Surface *loaded_surface = IMG_Load(path.c_str());
   if (loaded_surface == NULL) {
-    std::cout << "Unable to load image " << path << "!" << std::endl
-              << "SDL_image error: " << IMG_GetError() << std::endl;
+    std::cout << "Unable to load image " << path << "!\n"
+              << "SDL_image error: " << IMG_GetError() << "\n";
   } else {
     // SDL and OpenGL have different coordinates, we have to flip the surface
     SDL_Surface *flipped_surface = flip_vertical(loaded_surface);
@@ -128,7 +143,6 @@ void load_image(std::string path) {
     // Create texture
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    // glActiveTexture(GL_TEXTURE0);
 
     // Load image
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
@@ -172,6 +186,12 @@ int main(int argc, char *argv[]) {
     printf("SDL_image could not initialize! SDL_image Error: %s\n",
            IMG_GetError());
     return 1;
+  }
+
+  // Enable VSync
+  int swap_interval_code = SDL_GL_SetSwapInterval(1);
+  if (swap_interval_code == -1) {
+    std::cout << "Error enabling VSync!\n";
   }
 
   // Enable depth test and antialiasing
@@ -265,19 +285,20 @@ int main(int argc, char *argv[]) {
   SDL_Event windowEvent;
   auto t_start = std::chrono::high_resolution_clock::now();
   while (true) {
+    Timer timer;
     if (SDL_PollEvent(&windowEvent)) {
       if (windowEvent.type == SDL_QUIT)
         break;
     }
     auto t_now = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration_cast<std::chrono::duration<float>>(
-                     t_now - t_start)
-                     .count();
-    time *= 0.01f;
+    auto time =
+        std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
 
-    mvp_matrix = glm::rotate(mvp_matrix, time * glm::radians(180.0f),
-                             glm::vec3(0.0f, 1.0f, 0.0f));
-    glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
+    auto rotation_time = time.count() * 0.001f * 0.001f;
+    auto rotated_mvp =
+        glm::rotate(mvp_matrix, rotation_time * glm::radians(180.0f),
+                    glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &rotated_mvp[0][0]);
 
     // Clear the screen to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
