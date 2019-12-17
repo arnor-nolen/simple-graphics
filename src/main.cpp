@@ -257,16 +257,16 @@ int main(int argc, char *argv[]) {
   std::vector<Vertex> vertices = {
       // Position, Color, UV
       {glm::vec3{-0.5f, -0.5f, 0.5f}, glm::vec3{0.583f, 0.771f, 0.014f},
-       glm::vec2{0.0f, 0.0f}}, // Forward bottom-left
+       glm::vec2{0.0f, 0.0f}}, // Front bottom-left
 
       {glm::vec3{-0.5f, 0.5f, 0.5f}, glm::vec3{0.609f, 0.115f, 0.436f},
-       glm::vec2{0.0f, 1.0f}}, // Forward top-left
+       glm::vec2{0.0f, 1.0f}}, // Front top-left
 
       {glm::vec3{0.5f, 0.5f, 0.5f}, glm::vec3{0.327f, 0.483f, 0.844f},
-       glm::vec2{1.0f, 1.0f}}, // Forward top-right
+       glm::vec2{1.0f, 1.0f}}, // Front top-right
 
       {glm::vec3{0.5f, -0.5f, 0.5f}, glm::vec3{0.822f, 0.569f, 0.201f},
-       glm::vec2{1.0f, 0.0f}}, // Forward bottom-right
+       glm::vec2{1.0f, 0.0f}}, // Front bottom-right
 
       {glm::vec3{-0.5f, -0.5f, -0.5f}, glm::vec3{0.602f, 0.223f, 0.310f},
        glm::vec2{0.0f, 0.0f}}, // Back bottom-left
