@@ -13,6 +13,10 @@
 
 GLuint texture_id;
 
+struct Element {
+  GLuint vertices[3];
+};
+
 struct Vertex {
   glm::vec3 coord;
   glm::vec3 color;
@@ -35,21 +39,55 @@ private:
 };
 
 struct Model {
-  Model(const std::vector<Vertex> &vertices, const std::vector<GLuint> elements)
+  Model(const std::vector<Vertex> &vertices,
+        const std::vector<Element> elements)
       : vertices_(vertices), elements_(elements) {
     bind_buffers();
   }
   Model(const std::string &path) {
-    std::ifstream model_stream(path);
-    if (!model_stream) {
+    std::ifstream file(path);
+    if (!file) {
       std::cerr << "Can't load model file!\n";
+      // TODO: Exception in constructor!
     }
+    std::string buf;
+    while (std::getline(file, buf)) {
+      std::stringstream line(buf);
+      std::string op;
+      line >> op;
+      if (op == "#")
+        continue;
+      else if (op == "v") {
+        Vertex vertex;
+        line >> vertex.coord.x >> vertex.coord.y >> vertex.coord.z;
+        vertex.color = {1, 1, 1};
+        vertex.uv = {1, 0};
+        vertices_.push_back(vertex);
+      } else if (op == "f") {
+        Element e;
+        for (int i = 0; i != 3; ++i) {
+          std::string vf;
+          line >> vf;
+          std::replace(vf.begin(), vf.end(), '/', ' ');
+          std::stringstream ss(vf);
+          ss >> e.vertices[i];
+          // OBJ vertex index starts from 1, not from 0
+          e.vertices[i]--;
+        }
+        elements_.push_back(e);
+      }
+    }
+
     bind_buffers();
   }
 
   ~Model() {
     glDeleteBuffers(1, &ebo);
     glDeleteBuffers(1, &vbo);
+  }
+
+  void render() const {
+    glDrawElements(GL_TRIANGLES, elements_.size() * 3, GL_UNSIGNED_INT, 0);
   }
 
   const auto &get_vertices() const { return vertices_; }
@@ -66,12 +104,12 @@ private:
                  &vertices_.front(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.size() * sizeof(GLuint),
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.size() * sizeof(Element),
                  &elements_.front(), GL_STATIC_DRAW);
   }
 
   std::vector<Vertex> vertices_;
-  std::vector<GLuint> elements_;
+  std::vector<Element> elements_;
   GLuint vbo, ebo;
 };
 
@@ -245,6 +283,7 @@ int main(int argc, char *argv[]) {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
   glDepthFunc(GL_LESS);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // Load resources
   load_image("./resources/nazeeboPepega.png");
@@ -256,42 +295,51 @@ int main(int argc, char *argv[]) {
 
   std::vector<Vertex> vertices = {
       // Position, Color, UV
-      {glm::vec3{-0.5f, -0.5f, 0.5f}, glm::vec3{0.583f, 0.771f, 0.014f},
-       glm::vec2{0.0f, 0.0f}}, // Front bottom-left
+      {{-0.5f, -0.5f, 0.5f},
+       {0.583f, 0.771f, 0.014f},
+       {0.0f, 0.0f}}, // Front bottom-left
 
-      {glm::vec3{-0.5f, 0.5f, 0.5f}, glm::vec3{0.609f, 0.115f, 0.436f},
-       glm::vec2{0.0f, 1.0f}}, // Front top-left
+      {{-0.5f, 0.5f, 0.5f},
+       {0.609f, 0.115f, 0.436f},
+       {0.0f, 1.0f}}, // Front top-left
 
-      {glm::vec3{0.5f, 0.5f, 0.5f}, glm::vec3{0.327f, 0.483f, 0.844f},
-       glm::vec2{1.0f, 1.0f}}, // Front top-right
+      {{0.5f, 0.5f, 0.5f},
+       {0.327f, 0.483f, 0.844f},
+       {1.0f, 1.0f}}, // Front top-right
 
-      {glm::vec3{0.5f, -0.5f, 0.5f}, glm::vec3{0.822f, 0.569f, 0.201f},
-       glm::vec2{1.0f, 0.0f}}, // Front bottom-right
+      {{0.5f, -0.5f, 0.5f},
+       {0.822f, 0.569f, 0.201f},
+       {1.0f, 0.0f}}, // Front bottom-right
 
-      {glm::vec3{-0.5f, -0.5f, -0.5f}, glm::vec3{0.602f, 0.223f, 0.310f},
-       glm::vec2{0.0f, 0.0f}}, // Back bottom-left
+      {{-0.5f, -0.5f, -0.5f},
+       {0.602f, 0.223f, 0.310f},
+       {0.0f, 0.0f}}, // Back bottom-left
 
-      {glm::vec3{-0.5f, 0.5f, -0.5f}, glm::vec3{0.747f, 0.185f, 0.597f},
-       glm::vec2{0.0f, 0.0f}}, // Back top-left
+      {{-0.5f, 0.5f, -0.5f},
+       {0.747f, 0.185f, 0.597f},
+       {0.0f, 0.0f}}, // Back top-left
 
-      {glm::vec3{0.5f, 0.5f, -0.5f}, glm::vec3{0.770f, 0.761f, 0.559f},
-       glm::vec2{0.0f, 0.0f}}, // Back top-right
+      {{0.5f, 0.5f, -0.5f},
+       {0.770f, 0.761f, 0.559f},
+       {0.0f, 0.0f}}, // Back top-right
 
-      {glm::vec3{0.5f, -0.5f, -0.5f}, glm::vec3{0.971f, 0.572f, 0.833f},
-       glm::vec2{0.0f, 0.0f}}, // Back bottom-right
+      {{0.5f, -0.5f, -0.5f},
+       {0.971f, 0.572f, 0.833f},
+       {0.0f, 0.0f}}, // Back bottom-right
   };
 
-  std::vector<GLuint> elements = {
-      0, 3, 1, 1, 3, 2, // Front
-      5, 7, 4, 5, 6, 7, // Back
-      0, 1, 4, 5, 4, 1, // Left
-      2, 3, 7, 2, 7, 6, // Right
-      5, 1, 2, 6, 5, 2, // Top
-      4, 1, 0, 4, 7, 1  // Bottom
+  std::vector<Element> elements = {
+      {0, 3, 1}, {1, 3, 2}, // Front
+      {5, 7, 4}, {5, 6, 7}, // Back
+      {0, 1, 4}, {5, 4, 1}, // Left
+      {2, 3, 7}, {2, 7, 6}, // Right
+      {5, 1, 2}, {6, 5, 2}, // Top
+      {4, 1, 0}, {4, 7, 1}  // Bottom
 
   };
-  auto model = Model(vertices, elements);
-  // auto model2 = Model("./resources/model.obj");
+  // auto model = Model(vertices, elements);
+  // auto model = Model("./resources/cube.obj");
+  auto model2 = Model("./resources/teapot.obj");
 
   // Reading shaders from files
   GLint shaderProgram =
@@ -318,7 +366,7 @@ int main(int argc, char *argv[]) {
   glm::mat4 projection_matrix =
       glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
   glm::mat4 view_matrix =
-      glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+      glm::lookAt(glm::vec3(12, 9, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   glm::mat4 model_matrix = glm::mat4(1.0f);
   glm::mat4 mvp_matrix = projection_matrix * view_matrix * model_matrix;
 
@@ -348,7 +396,8 @@ int main(int argc, char *argv[]) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw triangles from the 3 vertices
-    glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
+    // model.render();
+    model2.render();
 
     SDL_GL_SwapWindow(window);
   }
