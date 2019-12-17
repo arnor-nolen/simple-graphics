@@ -28,6 +28,36 @@ private:
   std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
 };
 
+struct Model {
+  Model(const std::vector<float> &vertices, const std::vector<GLuint> elements)
+      : vertices_(vertices), elements_(elements) {
+    // Bind VBO and EBO objects
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(float),
+                 &vertices_.front(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.size() * sizeof(GLuint),
+                 &elements_.front(), GL_STATIC_DRAW);
+  }
+
+  ~Model() {
+    glDeleteBuffers(1, &ebo);
+    glDeleteBuffers(1, &vbo);
+  }
+
+  const std::vector<float> &get_vertices() const { return vertices_; }
+  const std::vector<GLuint> &get_elements() const { return elements_; }
+
+private:
+  std::vector<float> vertices_;
+  std::vector<GLuint> elements_;
+  GLuint vbo, ebo;
+};
+
 SDL_Surface *flip_vertical(SDL_Surface *sfc) {
   SDL_Surface *result = SDL_CreateRGBSurface(
       sfc->flags, sfc->w, sfc->h, sfc->format->BytesPerPixel * 8,
@@ -207,14 +237,7 @@ int main(int argc, char *argv[]) {
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  // Create a Vertex Buffer Object and copy the vertex data to it
-  GLuint vbo;
-  glGenBuffers(1, &vbo);
-
-  GLuint ebo;
-  glGenBuffers(1, &ebo);
-
-  float vertices[] = {
+  std::vector<float> vertices = {
       // Position, Color, UV
       -0.5f,  -0.5f,  0.5f,  0.583f,
       0.771f, 0.014f, 0.0f,  0.0f, // Forward bottom-left
@@ -234,7 +257,7 @@ int main(int argc, char *argv[]) {
       0.572f, 0.833f, 0.0f,  0.0f, // Back bottom-right
   };
 
-  GLuint elements[] = {
+  std::vector<GLuint> elements = {
       0, 3, 1, 1, 3, 2, // Front
       5, 7, 4, 5, 6, 7, // Back
       0, 1, 4, 5, 4, 1, // Left
@@ -243,13 +266,7 @@ int main(int argc, char *argv[]) {
       4, 1, 0, 4, 7, 1  // Bottom
 
   };
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements,
-               GL_STATIC_DRAW);
+  auto model = Model(vertices, elements);
 
   // Reading shaders from files
   GLint shaderProgram =
@@ -282,10 +299,11 @@ int main(int argc, char *argv[]) {
 
   GLuint matrix_uniform = glGetUniformLocation(shaderProgram, "mvp_matrix");
 
+  // Game loop
   SDL_Event windowEvent;
   auto t_start = std::chrono::high_resolution_clock::now();
   while (true) {
-    Timer timer;
+    // Timer timer;
     if (SDL_PollEvent(&windowEvent)) {
       if (windowEvent.type == SDL_QUIT)
         break;
@@ -304,14 +322,13 @@ int main(int argc, char *argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Draw a triangle from the 3 vertices
+    // Draw triangles from the 3 vertices
     glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
   glDeleteTextures(1, &texture_id);
   glDeleteProgram(shaderProgram);
-  glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
 
   IMG_Quit();
