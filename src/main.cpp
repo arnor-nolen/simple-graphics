@@ -13,6 +13,12 @@
 
 GLuint texture_id;
 
+struct Vertex {
+  glm::vec3 coord;
+  glm::vec3 color;
+  glm::vec2 uv;
+};
+
 struct Timer {
   Timer() : start_time_(std::chrono::high_resolution_clock::now()) {}
   ~Timer() { stop(); }
@@ -29,19 +35,16 @@ private:
 };
 
 struct Model {
-  Model(const std::vector<float> &vertices, const std::vector<GLuint> elements)
+  Model(const std::vector<Vertex> &vertices, const std::vector<GLuint> elements)
       : vertices_(vertices), elements_(elements) {
-    // Bind VBO and EBO objects
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(float),
-                 &vertices_.front(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.size() * sizeof(GLuint),
-                 &elements_.front(), GL_STATIC_DRAW);
+    bind_buffers();
+  }
+  Model(const std::string &path) {
+    std::ifstream model_stream(path);
+    if (!model_stream) {
+      std::cerr << "Can't load model file!\n";
+    }
+    bind_buffers();
   }
 
   ~Model() {
@@ -49,11 +52,25 @@ struct Model {
     glDeleteBuffers(1, &vbo);
   }
 
-  const std::vector<float> &get_vertices() const { return vertices_; }
-  const std::vector<GLuint> &get_elements() const { return elements_; }
+  const auto &get_vertices() const { return vertices_; }
+  const auto &get_elements() const { return elements_; }
 
 private:
-  std::vector<float> vertices_;
+  void bind_buffers() {
+    // Bind VBO and EBO objects
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(Vertex),
+                 &vertices_.front(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.size() * sizeof(GLuint),
+                 &elements_.front(), GL_STATIC_DRAW);
+  }
+
+  std::vector<Vertex> vertices_;
   std::vector<GLuint> elements_;
   GLuint vbo, ebo;
 };
@@ -79,12 +96,12 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   std::stringstream vert_shader_source, frag_shader_source;
   std::ifstream vert_shader(vert_path);
   if (!vert_shader) {
-    std::cout << "Can't load vertex shader file!\n";
+    std::cerr << "Can't load vertex shader file!\n";
     return 0;
   }
   std::ifstream frag_shader(frag_path);
   if (!frag_shader) {
-    std::cout << "Can't load fragment shader file!\n";
+    std::cerr << "Can't load fragment shader file!\n";
     return 0;
   }
 
@@ -108,10 +125,10 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
   if (info_log_length > 0) {
     std::vector<char> error_message(info_log_length + 1);
     glGetShaderInfoLog(vertexShader, info_log_length, NULL, &error_message[0]);
-    std::cout << "Error compiling vertex shader!\n";
+    std::cerr << "Error compiling vertex shader!\n";
     for (auto &i : error_message)
-      std::cout << i;
-    std::cout << "\n";
+      std::cerr << i;
+    std::cerr << "\n";
   }
 
   // Create and compile the fragment shader
@@ -125,10 +142,10 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
     std::vector<char> error_message(info_log_length + 1);
     glGetShaderInfoLog(fragmentShader, info_log_length, NULL,
                        &error_message[0]);
-    std::cout << "Error compiling fragment shader!\n";
+    std::cerr << "Error compiling fragment shader!\n";
     for (auto &i : error_message)
-      std::cout << i;
-    std::cout << "\n";
+      std::cerr << i;
+    std::cerr << "\n";
   }
 
   // Link the vertex and fragment shader into a shader program
@@ -145,10 +162,10 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
     std::vector<char> error_message(info_log_length + 1);
     glGetProgramInfoLog(shaderProgram, info_log_length, NULL,
                         &error_message[0]);
-    std::cout << "Error compiling shader program!\n";
+    std::cerr << "Error compiling shader program!\n";
     for (auto &i : error_message)
-      std::cout << i;
-    std::cout << "\n";
+      std::cerr << i;
+    std::cerr << "\n";
   }
 
   glDetachShader(shaderProgram, vertexShader);
@@ -163,7 +180,7 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
 void load_image(std::string path) {
   SDL_Surface *loaded_surface = IMG_Load(path.c_str());
   if (loaded_surface == NULL) {
-    std::cout << "Unable to load image " << path << "!\n"
+    std::cerr << "Unable to load image " << path << "!\n"
               << "SDL_image error: " << IMG_GetError() << "\n";
   } else {
     // SDL and OpenGL have different coordinates, we have to flip the surface
@@ -221,7 +238,7 @@ int main(int argc, char *argv[]) {
   // Enable VSync
   int swap_interval_code = SDL_GL_SetSwapInterval(1);
   if (swap_interval_code == -1) {
-    std::cout << "Error enabling VSync!\n";
+    std::cerr << "Error enabling VSync!\n";
   }
 
   // Enable depth test and antialiasing
@@ -237,24 +254,31 @@ int main(int argc, char *argv[]) {
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  std::vector<float> vertices = {
+  std::vector<Vertex> vertices = {
       // Position, Color, UV
-      -0.5f,  -0.5f,  0.5f,  0.583f,
-      0.771f, 0.014f, 0.0f,  0.0f, // Forward bottom-left
-      -0.5f,  0.5f,   0.5f,  0.609f,
-      0.115f, 0.436f, 0.0f,  1.0f, // Forward top-left
-      0.5f,   0.5f,   0.5f,  0.327f,
-      0.483f, 0.844f, 1.0f,  1.0f, // Forward top-right
-      0.5f,   -0.5f,  0.5f,  0.822f,
-      0.569f, 0.201f, 1.0f,  0.0f, // Forward bottom-right
-      -0.5f,  -0.5f,  -0.5f, 0.602f,
-      0.223f, 0.310f, 0.0f,  0.0f, // Back bottom-left
-      -0.5f,  0.5f,   -0.5f, 0.747f,
-      0.185f, 0.597f, 0.0f,  0.0f, // Back top-left
-      0.5f,   0.5f,   -0.5f, 0.770f,
-      0.761f, 0.559f, 0.0f,  0.0f, // Back top-right
-      0.5f,   -0.5f,  -0.5f, 0.971f,
-      0.572f, 0.833f, 0.0f,  0.0f, // Back bottom-right
+      {glm::vec3{-0.5f, -0.5f, 0.5f}, glm::vec3{0.583f, 0.771f, 0.014f},
+       glm::vec2{0.0f, 0.0f}}, // Forward bottom-left
+
+      {glm::vec3{-0.5f, 0.5f, 0.5f}, glm::vec3{0.609f, 0.115f, 0.436f},
+       glm::vec2{0.0f, 1.0f}}, // Forward top-left
+
+      {glm::vec3{0.5f, 0.5f, 0.5f}, glm::vec3{0.327f, 0.483f, 0.844f},
+       glm::vec2{1.0f, 1.0f}}, // Forward top-right
+
+      {glm::vec3{0.5f, -0.5f, 0.5f}, glm::vec3{0.822f, 0.569f, 0.201f},
+       glm::vec2{1.0f, 0.0f}}, // Forward bottom-right
+
+      {glm::vec3{-0.5f, -0.5f, -0.5f}, glm::vec3{0.602f, 0.223f, 0.310f},
+       glm::vec2{0.0f, 0.0f}}, // Back bottom-left
+
+      {glm::vec3{-0.5f, 0.5f, -0.5f}, glm::vec3{0.747f, 0.185f, 0.597f},
+       glm::vec2{0.0f, 0.0f}}, // Back top-left
+
+      {glm::vec3{0.5f, 0.5f, -0.5f}, glm::vec3{0.770f, 0.761f, 0.559f},
+       glm::vec2{0.0f, 0.0f}}, // Back top-right
+
+      {glm::vec3{0.5f, -0.5f, -0.5f}, glm::vec3{0.971f, 0.572f, 0.833f},
+       glm::vec2{0.0f, 0.0f}}, // Back bottom-right
   };
 
   std::vector<GLuint> elements = {
@@ -267,6 +291,7 @@ int main(int argc, char *argv[]) {
 
   };
   auto model = Model(vertices, elements);
+  // auto model2 = Model("./resources/model.obj");
 
   // Reading shaders from files
   GLint shaderProgram =
