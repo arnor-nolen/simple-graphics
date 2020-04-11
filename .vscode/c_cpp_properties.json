@@ -4,16 +4,15 @@
       "name": "Win32",
       "includePath": [
         "${workspaceFolder}/**",
-        "C://MinGW/SDLx64/include/SDL2",
-        "C://MinGW/glew/include",
-        "C://MinGW/glm",
-        "C://MinGW/SDL_image/include/SDL2"
+        "C:/LLVM/extra/SDL2/include",
+        "C:/LLVM/extra/glew/include",
+        "C:/LLVM/extra/glm",
+        "C:/LLVM/extra/SDL2_image/include"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
-      "compilerPath": "C:/MinGW/mingw64/bin/g++.exe",
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "intelliSenseMode": "gcc-x64"
+      "intelliSenseMode": "msvc-x64"
     },
     {
       "name": "Mac",

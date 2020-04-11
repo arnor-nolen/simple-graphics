@@ -17,10 +17,8 @@
       "windows": {
         "args": [
           "..",
-          "-G",
-          "MinGW Makefiles",
-          "-DCMAKE_LIBRARY_PATH='C:/MinGW/SDLx64/lib/;C:/MinGW/glew/lib/Release/x64;C:/MinGW/SDL_image/lib'",
-          "-DCMAKE_INCLUDE_PATH='C:/MinGW/SDLx64/include/SDL2;C:/MinGW/glew/include/;C:/MinGW/glm;C:/MinGW/SDL_image/include/SDL2'"
+          "-DCMAKE_LIBRARY_PATH='C:/LLVM/extra/SDL2/lib/x64;C:/LLVM/extra/glew/lib/Release/x64;C:/LLVM/extra/SDL2_image/lib/x64'",
+          "-DCMAKE_INCLUDE_PATH='C:/LLVM/extra/SDL2/include;C:/LLVM/extra/glew/include;C:/LLVM/extra/glm;C:/LLVM/extra/SDL2_image/include'"
         ]
       }
     },
@@ -34,7 +32,8 @@
         "command": "make"
       },
       "windows": {
-        "command": "mingw32-make"
+        "command": "cmake",
+        "args": ["--build", "."]
       },
       "dependsOn": ["cmake"],
       "group": {
