@@ -17,12 +17,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 
 
 # Set platform-specific stuff
-if (WIN32)
-    # Add "-mwindows" flag for hiding the console
+if (MSVC)
+    add_compile_options(/W4)
     set(EXTRA_LINKER_FLAGS SDL2main opengl32 glew32)
 elseif(APPLE)
-    # For debugging
-    add_compile_options(-g)
+    add_compile_options(-g -Wall -Wextra -Wpedantic)
     set(EXTRA_LINKER_FLAGS "-framework opengl" glew)
 else()
     message(FATAL_ERROR "Currently, only WIN32 and APPLE architectures are officially supported. You need to link your libraries manually by editing CMakeLists.txt")
