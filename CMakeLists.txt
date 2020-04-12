@@ -24,7 +24,7 @@ elseif(APPLE)
     add_compile_options(-g -Wall -Wextra -Wpedantic)
     set(EXTRA_LINKER_FLAGS "-framework opengl" glew)
 else()
-    message(FATAL_ERROR "Currently, only WIN32 and APPLE architectures are officially supported. You need to link your libraries manually by editing CMakeLists.txt")
+    message(FATAL_ERROR "Currently, only MSVC and APPLE architectures are officially supported. You need to link your libraries manually by editing CMakeLists.txt")
 endif()
 
 add_executable (${PROJECT_NAME} src/main.cpp)
