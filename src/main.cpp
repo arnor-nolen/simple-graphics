@@ -1,4 +1,15 @@
 #include "pch.h"
+#include "utils/timer.hpp"
+
+namespace sdl2 {
+struct sdl2_deleter {
+  void operator()(SDL_Surface *p) const { SDL_FreeSurface(p); }
+  void operator()(SDL_Window *p) const { SDL_DestroyWindow(p); }
+  void operator()(SDL_Renderer *p) const { SDL_DestroyRenderer(p); }
+  void operator()(SDL_Texture *p) const { SDL_DestroyTexture(p); }
+};
+template <typename T> using unique_ptr = std::unique_ptr<T, sdl2_deleter>;
+} // namespace sdl2
 
 GLuint texture_id;
 
@@ -10,21 +21,6 @@ struct Vertex {
   glm::vec3 coord;
   glm::vec3 color;
   glm::vec2 uv;
-};
-
-struct Timer {
-  Timer() : start_time_(std::chrono::high_resolution_clock::now()) {}
-  ~Timer() { stop(); }
-
-  void stop() {
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-        end_time - start_time_);
-    std::cout << duration.count() * 0.001f << " ms\n";
-  }
-
-private:
-  std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
 };
 
 struct Model {
@@ -76,7 +72,8 @@ struct Model {
   }
 
   void render() const {
-    glDrawElements(GL_TRIANGLES, elements_.size() * 3, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(elements_.size() * 3),
+                   GL_UNSIGNED_INT, 0);
   }
 
   const auto &get_vertices() const { return vertices_; }
@@ -102,11 +99,12 @@ private:
   GLuint vbo, ebo;
 };
 
-SDL_Surface *flip_vertical(SDL_Surface *sfc) {
-  SDL_Surface *result = SDL_CreateRGBSurface(
+sdl2::unique_ptr<SDL_Surface>
+flip_vertical(sdl2::unique_ptr<SDL_Surface> &sfc) {
+  auto result = sdl2::unique_ptr<SDL_Surface>(SDL_CreateRGBSurface(
       sfc->flags, sfc->w, sfc->h, sfc->format->BytesPerPixel * 8,
       sfc->format->Rmask, sfc->format->Gmask, sfc->format->Bmask,
-      sfc->format->Amask);
+      sfc->format->Amask));
   const auto pitch = sfc->pitch;
   const auto pxlength = pitch * (sfc->h - 1);
   auto pixels = static_cast<unsigned char *>(sfc->pixels) + pxlength;
@@ -119,7 +117,8 @@ SDL_Surface *flip_vertical(SDL_Surface *sfc) {
   return result;
 }
 
-GLuint load_shaders(std::string vert_path, std::string frag_path) {
+GLuint load_shaders(const std::string &vert_path,
+                    const std::string &frag_path) {
   std::stringstream vert_shader_source, frag_shader_source;
   std::ifstream vert_shader(vert_path);
   if (!vert_shader) {
@@ -205,14 +204,13 @@ GLuint load_shaders(std::string vert_path, std::string frag_path) {
 }
 
 void load_image(std::string path) {
-  SDL_Surface *loaded_surface = IMG_Load(path.c_str());
+  auto loaded_surface = sdl2::unique_ptr<SDL_Surface>(IMG_Load(path.c_str()));
   if (loaded_surface == NULL) {
     std::cerr << "Unable to load image " << path << "!\n"
               << "SDL_image error: " << IMG_GetError() << "\n";
   } else {
     // SDL and OpenGL have different coordinates, we have to flip the surface
-    SDL_Surface *flipped_surface = flip_vertical(loaded_surface);
-    SDL_FreeSurface(loaded_surface);
+    auto flipped_surface = flip_vertical(loaded_surface);
 
     // Create texture
     glGenTextures(1, &texture_id);
@@ -222,8 +220,6 @@ void load_image(std::string path) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
                  flipped_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  flipped_surface->pixels);
-
-    SDL_FreeSurface(flipped_surface);
 
     // Nice trilinear filtering with mipmaps
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -236,7 +232,7 @@ void load_image(std::string path) {
   return;
 }
 
-int main(int argc, char *argv[]) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -248,9 +244,9 @@ int main(int argc, char *argv[]) {
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
   // Create window
-  SDL_Window *window =
-      SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
-  SDL_GLContext context = SDL_GL_CreateContext(window);
+  auto window = sdl2::unique_ptr<SDL_Window>(
+      SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL));
+  SDL_GLContext context = SDL_GL_CreateContext(window.get());
 
   // Enable GLEW and SDL_image
   glewExperimental = GL_TRUE;
@@ -388,7 +384,7 @@ int main(int argc, char *argv[]) {
     // model.render();
     model2.render();
 
-    SDL_GL_SwapWindow(window);
+    SDL_GL_SwapWindow(window.get());
   }
   glDeleteTextures(1, &texture_id);
   glDeleteProgram(shaderProgram);
