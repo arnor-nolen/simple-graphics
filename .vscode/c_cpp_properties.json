@@ -16,9 +16,6 @@
       "name": "Mac",
       "includePath": ["${workspaceFolder}/**", "~/.conan/data/**"],
       "defines": [],
-      "macFrameworkPath": [
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
-      ],
       "compilerPath": "/usr/bin/clang++",
       "cStandard": "c11",
       "cppStandard": "c++17",
