@@ -8,8 +8,7 @@
       "program": "${workspaceFolder}/bin/simple-graphics",
       "terminal": "external",
       "args": [],
-      "cwd": "${workspaceFolder}",
-      "preLaunchTask": "make"
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

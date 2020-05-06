@@ -7,20 +7,7 @@
         "cwd": "${workspaceRoot}/build"
       },
       "command": "cmake",
-      "osx": {
-        "args": [
-          "..",
-          "-DCMAKE_LIBRARY_PATH='/usr/local/Cellar/sdl2/2.0.10/lib;/usr/local/Cellar/glew/2.1.0/lib;/usr/local/Cellar/sdl2_image/2.0.5/lib'",
-          "-DCMAKE_INCLUDE_PATH='/usr/local/Cellar/sdl2/2.0.10/include/SDL2;/usr/local/Cellar/glew/2.1.0/include/;/usr/local/Cellar/glm/0.9.9.5/include/;/usr/local/Cellar/sdl2_image/2.0.5/include/SDL2'"
-        ]
-      },
-      "windows": {
-        "args": [
-          "..",
-          "-DCMAKE_LIBRARY_PATH='C:/LLVM/extra/SDL2/lib/x64;C:/LLVM/extra/glew/lib/Release/x64;C:/LLVM/extra/SDL2_image/lib/x64'",
-          "-DCMAKE_INCLUDE_PATH='C:/LLVM/extra/SDL2/include;C:/LLVM/extra/glew/include;C:/LLVM/extra/glm;C:/LLVM/extra/SDL2_image/include'"
-        ]
-      }
+      "args": ["..", "-DCMAKE_BUILD_TYPE=Debug"]
     },
     {
       "type": "shell",
@@ -28,13 +15,8 @@
       "options": {
         "cwd": "${workspaceRoot}/build"
       },
-      "osx": {
-        "command": "make"
-      },
-      "windows": {
-        "command": "cmake",
-        "args": ["--build", "."]
-      },
+      "command": "cmake",
+      "args": ["--build", "."],
       "dependsOn": ["cmake"],
       "group": {
         "kind": "build",
