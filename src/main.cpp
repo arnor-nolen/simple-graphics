@@ -1,15 +1,8 @@
 #include "pch.h"
+#include "utils/GL.hpp"
+#include "utils/SDL.hpp"
+#include "utils/io.hpp"
 #include "utils/timer.hpp"
-
-namespace sdl2 {
-struct sdl2_deleter {
-  void operator()(SDL_Surface *p) const { SDL_FreeSurface(p); }
-  void operator()(SDL_Window *p) const { SDL_DestroyWindow(p); }
-  void operator()(SDL_Renderer *p) const { SDL_DestroyRenderer(p); }
-  void operator()(SDL_Texture *p) const { SDL_DestroyTexture(p); }
-};
-template <typename T> using unique_ptr = std::unique_ptr<T, sdl2_deleter>;
-} // namespace sdl2
 
 GLuint texture_id;
 
@@ -25,7 +18,7 @@ struct Vertex {
 
 struct Model {
   Model(const std::vector<Vertex> &vertices,
-        const std::vector<Element> elements)
+        const std::vector<Element> &elements)
       : vertices_(vertices), elements_(elements) {
     bind_buffers();
   }
@@ -100,7 +93,7 @@ private:
 };
 
 sdl2::unique_ptr<SDL_Surface>
-flip_vertical(sdl2::unique_ptr<SDL_Surface> &sfc) {
+flip_vertical(const sdl2::unique_ptr<SDL_Surface> &sfc) {
   auto result = sdl2::unique_ptr<SDL_Surface>(SDL_CreateRGBSurface(
       sfc->flags, sfc->w, sfc->h, sfc->format->BytesPerPixel * 8,
       sfc->format->Rmask, sfc->format->Gmask, sfc->format->Bmask,
@@ -117,95 +110,9 @@ flip_vertical(sdl2::unique_ptr<SDL_Surface> &sfc) {
   return result;
 }
 
-GLuint load_shaders(const std::string &vert_path,
-                    const std::string &frag_path) {
-  std::stringstream vert_shader_source, frag_shader_source;
-  std::ifstream vert_shader(vert_path);
-  if (!vert_shader) {
-    std::cerr << "Can't load vertex shader file!\n";
-    return 0;
-  }
-  std::ifstream frag_shader(frag_path);
-  if (!frag_shader) {
-    std::cerr << "Can't load fragment shader file!\n";
-    return 0;
-  }
-
-  vert_shader_source << vert_shader.rdbuf();
-  frag_shader_source << frag_shader.rdbuf();
-  std::string vert_shader_str = vert_shader_source.str();
-  std::string frag_shader_str = frag_shader_source.str();
-  const char *vert_shader_ptr = vert_shader_str.c_str();
-  const char *frag_shader_ptr = frag_shader_str.c_str();
-
-  // Create and compile the vertex shader
-  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vert_shader_ptr, NULL);
-  glCompileShader(vertexShader);
-
-  GLint result = GL_FALSE;
-  int info_log_length = 0;
-
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
-  glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &info_log_length);
-  if (info_log_length > 0) {
-    std::vector<char> error_message(info_log_length + 1);
-    glGetShaderInfoLog(vertexShader, info_log_length, NULL, &error_message[0]);
-    std::cerr << "Error compiling vertex shader!\n";
-    for (auto &i : error_message)
-      std::cerr << i;
-    std::cerr << "\n";
-  }
-
-  // Create and compile the fragment shader
-  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &frag_shader_ptr, NULL);
-  glCompileShader(fragmentShader);
-
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
-  glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &info_log_length);
-  if (info_log_length > 0) {
-    std::vector<char> error_message(info_log_length + 1);
-    glGetShaderInfoLog(fragmentShader, info_log_length, NULL,
-                       &error_message[0]);
-    std::cerr << "Error compiling fragment shader!\n";
-    for (auto &i : error_message)
-      std::cerr << i;
-    std::cerr << "\n";
-  }
-
-  // Link the vertex and fragment shader into a shader program
-  GLuint shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glBindFragDataLocation(shaderProgram, 0, "program_color");
-  glLinkProgram(shaderProgram);
-
-  // Check the program
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
-  glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &info_log_length);
-  if (info_log_length > 0) {
-    std::vector<char> error_message(info_log_length + 1);
-    glGetProgramInfoLog(shaderProgram, info_log_length, NULL,
-                        &error_message[0]);
-    std::cerr << "Error compiling shader program!\n";
-    for (auto &i : error_message)
-      std::cerr << i;
-    std::cerr << "\n";
-  }
-
-  glDetachShader(shaderProgram, vertexShader);
-  glDetachShader(shaderProgram, fragmentShader);
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
-  return shaderProgram;
-}
-
 void load_image(std::string path) {
   auto loaded_surface = sdl2::unique_ptr<SDL_Surface>(IMG_Load(path.c_str()));
-  if (loaded_surface == NULL) {
+  if (!loaded_surface) {
     std::cerr << "Unable to load image " << path << "!\n"
               << "SDL_image error: " << IMG_GetError() << "\n";
   } else {
@@ -232,41 +139,38 @@ void load_image(std::string path) {
   return;
 }
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-  SDL_Init(SDL_INIT_VIDEO);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
+  auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
+
+  // TODO: CHANGE TO VARIADIC TEMPLATES!
+  sdl2::gl_setAttributes(
+      {{SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE},
+       {SDL_GL_CONTEXT_MAJOR_VERSION, 4},
+       {SDL_GL_CONTEXT_MINOR_VERSION, 5},
+       {SDL_GL_STENCIL_SIZE, 8}});
 
   // Enable 4x Antialiasing
-  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+  sdl2::gl_setAttributes(
+      {{SDL_GL_MULTISAMPLEBUFFERS, 1}, {SDL_GL_MULTISAMPLESAMPLES, 4}});
 
   // Create window
   auto window = sdl2::unique_ptr<SDL_Window>(
       SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL));
-  SDL_GLContext context = SDL_GL_CreateContext(window.get());
+  auto context = sdl2::SDL_Context(window);
 
   // Enable GLEW and SDL_image
   glewExperimental = GL_TRUE;
   glewInit();
-  int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
-  if (!(IMG_Init(imgFlags) & imgFlags)) {
-    printf("SDL_image could not initialize! SDL_image Error: %s\n",
-           IMG_GetError());
-    return 1;
-  }
+  auto sdl_image = sdl2::SDL_image(IMG_INIT_PNG | IMG_INIT_JPG);
 
   // Enable VSync
-  int swap_interval_code = SDL_GL_SetSwapInterval(1);
-  if (swap_interval_code == -1) {
+  if (SDL_GL_SetSwapInterval(1) == -1) {
     std::cerr << "Error enabling VSync!\n";
-  }
+  };
 
   // Enable depth test and antialiasing
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_MULTISAMPLE);
+  // TODO: CHANGE TO VARIADIC TEMPLATES!
+  gl::enable({GL_DEPTH_TEST, GL_MULTISAMPLE});
   glDepthFunc(GL_LESS);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -274,9 +178,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   load_image("./resources/nazeeboPepega.png");
 
   // Create Vertex Array Object
-  GLuint vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
+  // Single VAO for entire application
+  auto vao = sdl2::VertexArrayObject();
 
   std::vector<Vertex> vertices = {
       // Position, Color, UV
@@ -322,29 +225,44 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
       {4, 1, 0}, {4, 7, 1}  // Bottom
 
   };
+
   // auto model = Model(vertices, elements);
   // auto model = Model("./resources/cube.obj");
   auto model2 = Model("./resources/teapot.obj");
 
-  // Reading shaders from files
-  GLint shaderProgram =
-      load_shaders("./src/shaders/shader.vert", "./src/shaders/shader.frag");
-  glUseProgram(shaderProgram);
+  // Loading shaders
+  std::vector<gl::Shader> shaders;
+  shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
+  shaders.emplace_back(gl::Shader(GL_FRAGMENT_SHADER));
+
+  shaders[0].load("./src/shaders/shader.vert");
+  shaders[1].load("./src/shaders/shader.frag");
+
+  // Link the vertex and fragment shader into a shader program
+  auto program = gl::Program();
+  program.attach(shaders);
+
+  glBindFragDataLocation(program.get(), 0, "program_color");
+
+  program.link();
+  program.detach(shaders);
+  shaders.clear();
+  program.use();
 
   // Specify the layout of the vertex data
-  GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+  GLint posAttrib = glGetAttribLocation(program.get(), "position");
   glEnableVertexAttribArray(posAttrib);
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 
-  GLint colAttrib = glGetAttribLocation(shaderProgram, "vertex_color");
+  GLint colAttrib = glGetAttribLocation(program.get(), "vertex_color");
   glEnableVertexAttribArray(colAttrib);
   glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
                         (void *)(3 * sizeof(float)));
-  GLint uvAttrib = glGetAttribLocation(shaderProgram, "vertex_uv");
+  GLint uvAttrib = glGetAttribLocation(program.get(), "vertex_uv");
   glEnableVertexAttribArray(uvAttrib);
   glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
                         (void *)(6 * sizeof(float)));
-  GLuint texture_uniform = glGetUniformLocation(shaderProgram, "tex");
+  GLuint texture_uniform = glGetUniformLocation(program.get(), "tex");
   glUniform1i(texture_uniform, 0);
 
   // Calculate MVP matrix
@@ -355,7 +273,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   glm::mat4 model_matrix = glm::mat4(1.0f);
   glm::mat4 mvp_matrix = projection_matrix * view_matrix * model_matrix;
 
-  GLuint matrix_uniform = glGetUniformLocation(shaderProgram, "mvp_matrix");
+  GLuint matrix_uniform = glGetUniformLocation(program.get(), "mvp_matrix");
 
   // Game loop
   SDL_Event windowEvent;
@@ -387,11 +305,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     SDL_GL_SwapWindow(window.get());
   }
   glDeleteTextures(1, &texture_id);
-  glDeleteProgram(shaderProgram);
-  glDeleteVertexArrays(1, &vao);
 
-  IMG_Quit();
-  SDL_GL_DeleteContext(context);
-  SDL_Quit();
   return 0;
+} catch (const std::exception &e) {
+  std::cerr << e.what() << '\n';
+  return 1;
 }
