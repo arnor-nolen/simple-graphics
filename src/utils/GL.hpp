@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/io.hpp"
+#include "io.hpp"
 #include <GL/glew.h>
 
 namespace gl {
@@ -16,8 +16,8 @@ struct Shader {
 
   Shader(const Shader &) = delete;
   Shader(Shader &&other) { swap(other); }
-  const Shader &Shader::operator=(const Shader &) = delete;
-  const Shader &Shader::operator=(Shader &&other) {
+  const Shader &operator=(const Shader &) = delete;
+  const Shader &operator=(Shader &&other) {
     swap(other);
     return *this;
   }
@@ -64,8 +64,8 @@ struct Program {
 
   Program(const Program &) = delete;
   Program(Program &&other) { swap(other); }
-  const Program &Program::operator=(const Program &) = delete;
-  const Program &Program::operator=(Program &&other) {
+  const Program &operator=(const Program &) = delete;
+  const Program &operator=(Program &&other) {
     swap(other);
     return *this;
   };

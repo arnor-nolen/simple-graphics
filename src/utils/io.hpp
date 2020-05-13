@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/timer.hpp"
+#include "timer.hpp"
 #include <fstream>
 
 auto load_file(const std::string &path) {

@@ -1,4 +1,4 @@
-#version 450 core
+#version 410 core
 
 in vec3 fragment_color;
 in vec2 fragment_uv;
