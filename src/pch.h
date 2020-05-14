@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <SDL_opengl.h>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <fstream>
 #include <glm/glm.hpp>

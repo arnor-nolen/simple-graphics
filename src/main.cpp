@@ -1,13 +1,15 @@
+#include "model.hpp"
 #include "pch.h"
 #include "utils/GL.hpp"
 #include "utils/SDL.hpp"
 #include "utils/io.hpp"
 #include "utils/timer.hpp"
 
+
 GLuint texture_id;
 
 struct Element {
-  GLuint vertices[3];
+  std::array<GLuint, 3> vertices;
 };
 
 struct Vertex {
@@ -288,7 +290,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
 
-    auto rotation_time = time.count() * 0.001f * 0.001f;
+    auto rotation_time = time.count() * 0.001f * 0.001f * 0.1f;
     auto rotated_mvp =
         glm::rotate(mvp_matrix, rotation_time * glm::radians(180.0f),
                     glm::vec3(0.0f, 1.0f, 0.0f));

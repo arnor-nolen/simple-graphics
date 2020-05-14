@@ -29,6 +29,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 
+
 # Set platform-specific stuff
 if (MSVC)
   add_compile_options(/W4)
@@ -38,11 +39,17 @@ else()
   message(FATAL_ERROR "Currently, only MSVC and APPLE architectures are officially supported. You need to link your libraries manually by editing CMakeLists.txt")
 endif()
 
+# Set targets
 add_executable (${PROJECT_NAME} src/main.cpp)
 
+# Precompiled headers for faster compilation times
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/pch.h)
 
 # Use c++17 standard
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
+# Add src to the include path
+target_include_directories(${PROJECT_NAME} PUBLIC src/)
+
+#Link libraries
 target_link_libraries(${PROJECT_NAME} CONAN_PKG::glew CONAN_PKG::glm CONAN_PKG::sdl2 CONAN_PKG::sdl2_image)

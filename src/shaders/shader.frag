@@ -1,6 +1,6 @@
 #version 410 core
 
-in vec3 fragment_color;
+sample in vec3 fragment_color;
 in vec2 fragment_uv;
 
 out vec4 program_color;

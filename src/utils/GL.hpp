@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io.hpp"
+#include "utils/io.hpp"
 #include <GL/glew.h>
 
 namespace gl {
