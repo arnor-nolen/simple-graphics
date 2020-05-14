@@ -5,94 +5,7 @@
 #include "utils/io.hpp"
 #include "utils/timer.hpp"
 
-
-GLuint texture_id;
-
-struct Element {
-  std::array<GLuint, 3> vertices;
-};
-
-struct Vertex {
-  glm::vec3 coord;
-  glm::vec3 color;
-  glm::vec2 uv;
-};
-
-struct Model {
-  Model(const std::vector<Vertex> &vertices,
-        const std::vector<Element> &elements)
-      : vertices_(vertices), elements_(elements) {
-    bind_buffers();
-  }
-  Model(const std::string &path) {
-    std::ifstream file(path);
-    if (!file) {
-      std::cerr << "Can't load model file!\n";
-      // TODO: Exception in constructor!
-    }
-    std::string buf;
-    while (std::getline(file, buf)) {
-      std::stringstream line(buf);
-      std::string op;
-      line >> op;
-      if (op == "#")
-        continue;
-      else if (op == "v") {
-        Vertex vertex;
-        line >> vertex.coord.x >> vertex.coord.y >> vertex.coord.z;
-        vertex.color = {1, 1, 1};
-        vertex.uv = {1, 0};
-        vertices_.push_back(vertex);
-      } else if (op == "f") {
-        Element e;
-        for (int i = 0; i != 3; ++i) {
-          std::string vf;
-          line >> vf;
-          std::replace(vf.begin(), vf.end(), '/', ' ');
-          std::stringstream ss(vf);
-          ss >> e.vertices[i];
-          // OBJ vertex index starts from 1, not from 0
-          e.vertices[i]--;
-        }
-        elements_.push_back(e);
-      }
-    }
-
-    bind_buffers();
-  }
-
-  ~Model() {
-    glDeleteBuffers(1, &ebo);
-    glDeleteBuffers(1, &vbo);
-  }
-
-  void render() const {
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(elements_.size() * 3),
-                   GL_UNSIGNED_INT, 0);
-  }
-
-  const auto &get_vertices() const { return vertices_; }
-  const auto &get_elements() const { return elements_; }
-
-private:
-  void bind_buffers() {
-    // Bind VBO and EBO objects
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(Vertex),
-                 &vertices_.front(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.size() * sizeof(Element),
-                 &elements_.front(), GL_STATIC_DRAW);
-  }
-
-  std::vector<Vertex> vertices_;
-  std::vector<Element> elements_;
-  GLuint vbo, ebo;
-};
+// GLuint texture_id;
 
 sdl2::unique_ptr<SDL_Surface>
 flip_vertical(const sdl2::unique_ptr<SDL_Surface> &sfc) {
@@ -112,34 +25,35 @@ flip_vertical(const sdl2::unique_ptr<SDL_Surface> &sfc) {
   return result;
 }
 
-void load_image(std::string path) {
-  auto loaded_surface = sdl2::unique_ptr<SDL_Surface>(IMG_Load(path.c_str()));
-  if (!loaded_surface) {
-    std::cerr << "Unable to load image " << path << "!\n"
-              << "SDL_image error: " << IMG_GetError() << "\n";
-  } else {
-    // SDL and OpenGL have different coordinates, we have to flip the surface
-    auto flipped_surface = flip_vertical(loaded_surface);
+// void load_image(std::string path) {
+//   auto loaded_surface =
+//   sdl2::unique_ptr<SDL_Surface>(IMG_Load(path.c_str())); if (!loaded_surface)
+//   {
+//     std::cerr << "Unable to load image " << path << "!\n"
+//               << "SDL_image error: " << IMG_GetError() << "\n";
+//   } else {
+//     // SDL and OpenGL have different coordinates, we have to flip the surface
+//     auto flipped_surface = flip_vertical(loaded_surface);
 
-    // Create texture
-    glGenTextures(1, &texture_id);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
+//     // Create texture
+//     glGenTextures(1, &texture_id);
+//     glBindTexture(GL_TEXTURE_2D, texture_id);
 
-    // Load image
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
-                 flipped_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                 flipped_surface->pixels);
+//     // Load image
+//     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
+//                  flipped_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+//                  flipped_surface->pixels);
 
-    // Nice trilinear filtering with mipmaps
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-  }
-  return;
-}
+//     // Nice trilinear filtering with mipmaps
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+//                     GL_LINEAR_MIPMAP_LINEAR);
+//     glGenerateMipmap(GL_TEXTURE_2D);
+//   }
+//   return;
+// }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
@@ -177,11 +91,40 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // Load resources
-  load_image("./resources/nazeeboPepega.png");
+  // load_image("./resources/nazeeboPepega.png");
+
+  // Loading shaders
+  std::vector<gl::Shader> shaders;
+  shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
+  shaders.emplace_back(gl::Shader(GL_FRAGMENT_SHADER));
+
+  shaders[0].load("./src/shaders/shader.vert");
+  shaders[1].load("./src/shaders/shader.frag");
+
+  // Link the vertex and fragment shader into a shader program
+  auto program = gl::Program();
+  program.attach(shaders);
+
+  glBindFragDataLocation(program.get(), 0, "program_color");
+
+  program.link();
+  program.detach(shaders);
+  shaders.clear();
+  program.use();
 
   // Create Vertex Array Object
   // Single VAO for entire application
   auto vao = sdl2::VertexArrayObject();
+
+  // Enable shader attributes
+  GLint posAttrib = glGetAttribLocation(program.get(), "position");
+  glEnableVertexAttribArray(posAttrib);
+
+  GLint colAttrib = glGetAttribLocation(program.get(), "vertex_color");
+  glEnableVertexAttribArray(colAttrib);
+
+  GLint uvAttrib = glGetAttribLocation(program.get(), "vertex_uv");
+  glEnableVertexAttribArray(uvAttrib);
 
   std::vector<Vertex> vertices = {
       // Position, Color, UV
@@ -218,6 +161,41 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
        {0.0f, 0.0f}}, // Back bottom-right
   };
 
+  std::vector<Vertex> vertices2 = {
+      // Position, Color, UV
+      {{0.5f, 0.5f, 1.5f},
+       {0.583f, 0.771f, 0.014f},
+       {0.0f, 0.0f}}, // Front bottom-left
+
+      {{0.5f, 1.5f, 1.5f},
+       {0.609f, 0.115f, 0.436f},
+       {0.0f, 1.0f}}, // Front top-left
+
+      {{1.5f, 1.5f, 1.5f},
+       {0.327f, 0.483f, 0.844f},
+       {1.0f, 1.0f}}, // Front top-right
+
+      {{1.5f, 0.5f, 1.5f},
+       {0.822f, 0.569f, 0.201f},
+       {1.0f, 0.0f}}, // Front bottom-right
+
+      {{0.5f, 0.5f, 0.5f},
+       {0.602f, 0.223f, 0.310f},
+       {0.0f, 0.0f}}, // Back bottom-left
+
+      {{0.5f, 1.5f, 1.5f},
+       {0.747f, 0.185f, 0.597f},
+       {0.0f, 0.0f}}, // Back top-left
+
+      {{1.5f, 1.5f, 0.5f},
+       {0.770f, 0.761f, 0.559f},
+       {0.0f, 0.0f}}, // Back top-right
+
+      {{1.5f, 0.5f, 0.5f},
+       {0.971f, 0.572f, 0.833f},
+       {0.0f, 0.0f}}, // Back bottom-right
+  };
+
   std::vector<Element> elements = {
       {0, 3, 1}, {1, 3, 2}, // Front
       {5, 7, 4}, {5, 6, 7}, // Back
@@ -228,44 +206,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
 
   };
 
-  // auto model = Model(vertices, elements);
+  auto model = Model(elements, vertices);
+  auto model2 = Model(elements, vertices2);
   // auto model = Model("./resources/cube.obj");
-  auto model2 = Model("./resources/teapot.obj");
+  // auto model2 = Model("./resources/teapot.obj");
 
-  // Loading shaders
-  std::vector<gl::Shader> shaders;
-  shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
-  shaders.emplace_back(gl::Shader(GL_FRAGMENT_SHADER));
-
-  shaders[0].load("./src/shaders/shader.vert");
-  shaders[1].load("./src/shaders/shader.frag");
-
-  // Link the vertex and fragment shader into a shader program
-  auto program = gl::Program();
-  program.attach(shaders);
-
-  glBindFragDataLocation(program.get(), 0, "program_color");
-
-  program.link();
-  program.detach(shaders);
-  shaders.clear();
-  program.use();
-
-  // Specify the layout of the vertex data
-  GLint posAttrib = glGetAttribLocation(program.get(), "position");
-  glEnableVertexAttribArray(posAttrib);
-  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
-
-  GLint colAttrib = glGetAttribLocation(program.get(), "vertex_color");
-  glEnableVertexAttribArray(colAttrib);
-  glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
-  GLint uvAttrib = glGetAttribLocation(program.get(), "vertex_uv");
-  glEnableVertexAttribArray(uvAttrib);
-  glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(6 * sizeof(float)));
-  GLuint texture_uniform = glGetUniformLocation(program.get(), "tex");
-  glUniform1i(texture_uniform, 0);
+  // GLuint texture_uniform = glGetUniformLocation(program.get(), "tex");
+  // glUniform1i(texture_uniform, 0);
 
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
@@ -301,12 +248,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw triangles from the 3 vertices
-    // model.render();
+    model.render();
     model2.render();
 
     SDL_GL_SwapWindow(window.get());
   }
-  glDeleteTextures(1, &texture_id);
+  // glDeleteTextures(1, &texture_id);
 
   return 0;
 } catch (const std::exception &e) {

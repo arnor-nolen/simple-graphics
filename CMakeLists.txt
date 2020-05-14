@@ -49,7 +49,7 @@ target_precompile_headers(${PROJECT_NAME} PUBLIC src/pch.h)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 # Add src to the include path
-target_include_directories(${PROJECT_NAME} PUBLIC src/)
+target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 #Link libraries
 target_link_libraries(${PROJECT_NAME} CONAN_PKG::glew CONAN_PKG::glm CONAN_PKG::sdl2 CONAN_PKG::sdl2_image)

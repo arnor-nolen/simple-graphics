@@ -10,6 +10,23 @@ void enable(const std::vector<GLenum> &features) {
   }
 }
 
+void check_error_log(const GLuint &object,
+                     void (*glGet)(GLuint, GLenum, GLint *),
+                     void (*glGetLog)(GLuint, GLsizei, GLsizei *, GLchar *)) {
+  auto result = GL_FALSE;
+  int info_log_length = 0;
+
+  glGet(object, GL_COMPILE_STATUS, &result);
+  glGet(object, GL_INFO_LOG_LENGTH, &info_log_length);
+
+  if (info_log_length > 0) {
+    std::vector<char> error_message(info_log_length + 1);
+    glGetLog(object, info_log_length, NULL, &error_message.front());
+    std::cerr << "Error during shader compilation or program linkage!\n"
+              << error_message.data() << '\n';
+  }
+}
+
 struct Shader {
   Shader(GLenum shader_type) : shader_(glCreateShader(shader_type)) {}
   ~Shader() { glDeleteShader(shader_); }
@@ -29,7 +46,7 @@ struct Shader {
     compile(source);
   }
 
-  const GLuint &get() const { return shader_; }
+  const auto &get() const { return shader_; }
 
 private:
   void compile(const std::vector<char> &source) {
@@ -37,22 +54,7 @@ private:
 
     glShaderSource(shader_, 1, &shader_ptr, NULL);
     glCompileShader(shader_);
-
-    GLint result = GL_FALSE;
-    int info_log_length = 0;
-
-    glGetShaderiv(shader_, GL_COMPILE_STATUS, &result);
-    glGetShaderiv(shader_, GL_INFO_LOG_LENGTH, &info_log_length);
-
-    if (info_log_length > 0) {
-      std::vector<char> error_message(info_log_length + 1);
-      glGetShaderInfoLog(shader_, info_log_length, NULL,
-                         &error_message.front());
-      std::cerr << "Error compiling vertex shader!\n";
-      for (const auto &i : error_message)
-        std::cerr << i;
-      std::cerr << '\n';
-    }
+    check_error_log(shader_, glGetShaderiv, glGetShaderInfoLog);
   }
 
   GLuint shader_;
@@ -74,7 +76,7 @@ struct Program {
     std::swap(this->shader_program_, other.shader_program_);
   }
 
-  const GLuint &get() const { return shader_program_; }
+  const auto &get() const { return shader_program_; }
 
   void attach(const Shader &shader) const {
     glAttachShader(shader_program_, shader.get());
@@ -98,22 +100,7 @@ struct Program {
 
   void link() {
     glLinkProgram(shader_program_);
-
-    // Check the program
-    GLint result = GL_FALSE;
-    int info_log_length = 0;
-
-    glGetProgramiv(shader_program_, GL_LINK_STATUS, &result);
-    glGetProgramiv(shader_program_, GL_INFO_LOG_LENGTH, &info_log_length);
-    if (info_log_length > 0) {
-      std::vector<char> error_message(info_log_length + 1);
-      glGetProgramInfoLog(shader_program_, info_log_length, NULL,
-                          &error_message.front());
-      std::cerr << "Error compiling shader program!\n";
-      for (const auto &i : error_message)
-        std::cerr << i;
-      std::cerr << '\n';
-    }
+    check_error_log(shader_program_, glGetProgramiv, glGetProgramInfoLog);
   }
 
   void use() { glUseProgram(shader_program_); }
@@ -121,4 +108,43 @@ struct Program {
 private:
   GLuint shader_program_;
 };
+
+template <typename T> struct Buffer {
+  Buffer(const GLenum &buffer_type, const std::vector<T> &data)
+      : buffer_type_(buffer_type), data_(data) {
+    glGenBuffers(1, &buf_);
+    bind();
+    set_layout();
+  }
+  ~Buffer() { glDeleteBuffers(1, &buf_); }
+
+  Buffer(const Buffer &) = delete;
+  Buffer(Buffer &&other) { swap(other); }
+  const Buffer &operator=(const Buffer &) = delete;
+  const Buffer &operator=(Buffer &&other) {
+    swap(other);
+    return *this;
+  };
+
+  void swap(Buffer &other) {
+    std::swap(this->buf_, other.buf_);
+    std::swap(this->data_, other.data_);
+    std::swap(this->buffer_type_, other.buffer_type_);
+  }
+
+  const auto &get_data() const { return data_; }
+
+  void bind() { glBindBuffer(buffer_type_, buf_); }
+
+private:
+  void set_layout() {
+    glNamedBufferData(buf_, data_.size() * sizeof(std::vector<T>),
+                      &data_.front(), GL_STATIC_DRAW);
+  }
+
+  GLuint buf_;
+  GLenum buffer_type_;
+  std::vector<T> data_;
+};
+
 } // namespace gl
