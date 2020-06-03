@@ -62,15 +62,21 @@ struct Model {
   void swap(Model &other) {
     this->ebo_.swap(other.ebo_);
     this->vbo_.swap(other.vbo_);
+    std::swap(this->mvp_matrix_, other.mvp_matrix_);
   }
 
-  void render() {
+  void render(const GLuint &matrix_uniform) {
+    glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &mvp_matrix_[0][0]);
     bind_buffers();
     set_layout();
     glDrawElements(GL_TRIANGLES,
                    static_cast<GLsizei>(ebo_.get_data().size() * 3),
                    GL_UNSIGNED_INT, 0);
   }
+
+  void set_mvp_matrix(const glm::mat4 &mvp_matrix) { mvp_matrix_ = mvp_matrix; }
+
+  const auto &get_mvp_matrix() { return mvp_matrix_; }
 
 private:
   void bind_buffers() {
@@ -88,4 +94,5 @@ private:
 
   gl::Buffer<Element> ebo_;
   gl::Buffer<Vertex> vbo_;
+  glm::mat4 mvp_matrix_ = glm::mat4(1.0f);
 };

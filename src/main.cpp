@@ -44,7 +44,7 @@
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
 
-  // TODO: CHANGE TO VARIADIC TEMPLATES!
+  // TODO: CHANGE TO VARIADIC ARGUMENTS!
   sdl2::gl_setAttributes(
       {{SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE},
        {SDL_GL_CONTEXT_MAJOR_VERSION, 4},
@@ -79,6 +79,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   // Load resources
   // load_image("./resources/nazeeboPepega.png");
 
+  // Create Vertex Array Object
+  // Single VAO for entire application
+  auto vao = gl::VertexArrayObject();
+
+  auto resource_manager = ResourceManager();
+  resource_manager.load_model("./resources/teapot.obj");
+  resource_manager.load_model("./resources/cube.obj");
+
   // Loading shaders
   std::vector<gl::Shader> shaders;
   shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
@@ -88,91 +96,30 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   shaders[1].load("./src/shaders/shader.frag");
 
   // Link the vertex and fragment shader into a shader program
-  auto program = gl::Program();
-  program.attach(shaders);
-
-  glBindFragDataLocation(program.get(), 0, "program_color");
-
-  program.link();
-  program.detach(shaders);
-  shaders.clear();
+  auto &program = resource_manager.get_program_ptr();
+  program.compile(shaders);
   program.use();
 
-  // Create Vertex Array Object
-  // Single VAO for entire application
-  auto vao = sdl2::VertexArrayObject();
-
-  // Enable shader attributes
-  GLint posAttrib = glGetAttribLocation(program.get(), "position");
-  glEnableVertexAttribArray(posAttrib);
-
-  GLint colAttrib = glGetAttribLocation(program.get(), "vertex_color");
-  glEnableVertexAttribArray(colAttrib);
-
-  GLint uvAttrib = glGetAttribLocation(program.get(), "vertex_uv");
-  glEnableVertexAttribArray(uvAttrib);
-
-  std::vector<Vertex> vertices = {
-      // Position, Color, UV
-      {{-0.5f, -0.5f, 0.5f},
-       {0.583f, 0.771f, 0.014f},
-       {0.0f, 0.0f}}, // Front bottom-left
-
-      {{-0.5f, 0.5f, 0.5f},
-       {0.609f, 0.115f, 0.436f},
-       {0.0f, 1.0f}}, // Front top-left
-
-      {{0.5f, 0.5f, 0.5f},
-       {0.327f, 0.483f, 0.844f},
-       {1.0f, 1.0f}}, // Front top-right
-
-      {{0.5f, -0.5f, 0.5f},
-       {0.822f, 0.569f, 0.201f},
-       {1.0f, 0.0f}}, // Front bottom-right
-
-      {{-0.5f, -0.5f, -0.5f},
-       {0.602f, 0.223f, 0.310f},
-       {0.0f, 0.0f}}, // Back bottom-left
-
-      {{-0.5f, 0.5f, -0.5f},
-       {0.747f, 0.185f, 0.597f},
-       {0.0f, 0.0f}}, // Back top-left
-
-      {{0.5f, 0.5f, -0.5f},
-       {0.770f, 0.761f, 0.559f},
-       {0.0f, 0.0f}}, // Back top-right
-
-      {{0.5f, -0.5f, -0.5f},
-       {0.971f, 0.572f, 0.833f},
-       {0.0f, 0.0f}}, // Back bottom-right
-  };
-
-  std::vector<Element> elements = {
-      {0, 3, 1}, {1, 3, 2}, // Front
-      {5, 7, 4}, {5, 6, 7}, // Back
-      {0, 1, 4}, {5, 4, 1}, // Left
-      {2, 3, 7}, {2, 7, 6}, // Right
-      {5, 1, 2}, {6, 5, 2}, // Top
-      {4, 1, 0}, {4, 7, 1}  // Bottom
-
-  };
-
-  auto resource_manager = ResourceManager();
-  resource_manager.load_model(elements, vertices);
-  resource_manager.load_model("./resources/teapot.obj");
+  // We don't need shaders anymore as the program is compiled
+  shaders.clear();
 
   // GLuint texture_uniform = glGetUniformLocation(program.get(), "tex");
   // glUniform1i(texture_uniform, 0);
+
+  // GLuint matrix_uniform = glGetUniformLocation(program.get(), "mvp_matrix");
 
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
       glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
   glm::mat4 view_matrix =
       glm::lookAt(glm::vec3(12, 9, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-  glm::mat4 model_matrix = glm::mat4(1.0f);
-  glm::mat4 mvp_matrix = projection_matrix * view_matrix * model_matrix;
+  auto model_matrix1 = glm::mat4(1.0f);
+  auto model_matrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0));
+  glm::mat4 mvp_matrix1 = projection_matrix * view_matrix * model_matrix1;
+  glm::mat4 mvp_matrix2 = projection_matrix * view_matrix * model_matrix2;
 
-  GLuint matrix_uniform = glGetUniformLocation(program.get(), "mvp_matrix");
+  auto &models = resource_manager.get_models();
+  models[1].set_mvp_matrix(mvp_matrix2);
 
   // Game loop
   SDL_Event windowEvent;
@@ -183,19 +130,20 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
       if (windowEvent.type == SDL_QUIT)
         break;
     }
+    // Clear the screen to black
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     auto t_now = std::chrono::high_resolution_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
 
     auto rotation_time = time.count() * 0.001f * 0.001f * 0.1f;
-    auto rotated_mvp =
-        glm::rotate(mvp_matrix, rotation_time * glm::radians(180.0f),
+    auto rotated_mvp1 =
+        glm::rotate(mvp_matrix1, rotation_time * glm::radians(180.0f),
                     glm::vec3(0.0f, 1.0f, 0.0f));
-    glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &rotated_mvp[0][0]);
-
-    // Clear the screen to black
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    models[0].set_mvp_matrix(rotated_mvp1);
+    // glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &rotated_mvp1[0][0]);
 
     // Render all the models
     resource_manager.render_all();

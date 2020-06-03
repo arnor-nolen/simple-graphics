@@ -13,10 +13,14 @@ struct ResourceManager {
 
   void render_all() {
     for (auto &model : models_) {
-      model.render();
+      model.render(program_.get_matrix_uniform());
     }
   }
 
+  auto &get_models() { return models_; }
+  auto &get_program_ptr() { return program_; }
+
 private:
   std::vector<Model> models_;
+  gl::Program program_;
 };

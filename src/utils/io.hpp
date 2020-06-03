@@ -4,7 +4,7 @@
 #include <fstream>
 
 auto load_file(const std::string &path) {
-  Timer timer;
+  Timer timer("Loading file " + path + " took ");
   std::ifstream file(path, std::ios::binary | std::ios::ate);
   const std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);

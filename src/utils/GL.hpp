@@ -78,6 +78,20 @@ struct Program {
 
   const auto &get() const { return shader_program_; }
 
+  const auto &get_matrix_uniform() const { return matrix_uniform_; }
+
+  void use() { glUseProgram(shader_program_); }
+
+  void compile(const std::vector<Shader> &shaders) {
+    attach(shaders);
+    set_output();
+    link();
+    detach(shaders);
+    set_input();
+    matrix_uniform_ = glGetUniformLocation(shader_program_, "mvp_matrix");
+  }
+
+private:
   void attach(const Shader &shader) const {
     glAttachShader(shader_program_, shader.get());
   }
@@ -103,10 +117,24 @@ struct Program {
     check_error_log(shader_program_, glGetProgramiv, glGetProgramInfoLog);
   }
 
-  void use() { glUseProgram(shader_program_); }
+  void set_input() {
+    // Enable shader attributes
+    GLint posAttrib = glGetAttribLocation(shader_program_, "position");
+    glEnableVertexAttribArray(posAttrib);
 
-private:
+    GLint colAttrib = glGetAttribLocation(shader_program_, "vertex_color");
+    glEnableVertexAttribArray(colAttrib);
+
+    GLint uvAttrib = glGetAttribLocation(shader_program_, "vertex_uv");
+    glEnableVertexAttribArray(uvAttrib);
+  }
+
+  void set_output() {
+    glBindFragDataLocation(shader_program_, 0, "program_color");
+  }
+
   GLuint shader_program_;
+  GLuint matrix_uniform_;
 };
 
 template <typename T> struct Buffer {
@@ -152,6 +180,17 @@ private:
   GLuint buf_;
   GLenum buffer_type_;
   std::vector<T> data_;
+};
+
+struct VertexArrayObject {
+  VertexArrayObject() {
+    glGenVertexArrays(1, &vao_);
+    glBindVertexArray(vao_);
+  }
+  ~VertexArrayObject() { glDeleteVertexArrays(1, &vao_); }
+
+private:
+  GLuint vao_;
 };
 
 } // namespace gl
