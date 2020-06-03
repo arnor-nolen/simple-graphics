@@ -110,6 +110,7 @@ private:
 };
 
 template <typename T> struct Buffer {
+  Buffer() : buf_(0), buffer_type_(0) {}
   Buffer(const GLenum &buffer_type, const std::vector<T> &data)
       : buffer_type_(buffer_type), data_(data) {
     glGenBuffers(1, &buf_);
@@ -130,6 +131,10 @@ template <typename T> struct Buffer {
     std::swap(this->buf_, other.buf_);
     std::swap(this->data_, other.data_);
     std::swap(this->buffer_type_, other.buffer_type_);
+    this->bind();
+    this->set_layout();
+    other.bind();
+    other.set_layout();
   }
 
   const auto &get_data() const { return data_; }
@@ -138,8 +143,10 @@ template <typename T> struct Buffer {
 
 private:
   void set_layout() {
-    glNamedBufferData(buf_, data_.size() * sizeof(std::vector<T>),
-                      &data_.front(), GL_STATIC_DRAW);
+    if (data_.size() > 0) {
+      glNamedBufferData(buf_, data_.size() * sizeof(std::vector<T>),
+                        &data_.front(), GL_STATIC_DRAW);
+    }
   }
 
   GLuint buf_;

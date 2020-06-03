@@ -33,6 +33,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 # Set platform-specific stuff
 if (MSVC)
   add_compile_options(/W4)
+  # Suppress annoying warning that external libraries are compiled without debug info
+  add_link_options(/IGNORE:4099)
 elseif(APPLE)
   add_compile_options(-g -O3 -Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
 else()
