@@ -15,36 +15,9 @@ struct Model {
 
   Model(const std::string &path) {
     auto file = load_file(path);
-    auto stream = std::stringstream(file.data());
     std::vector<Element> elements;
     std::vector<Vertex> vertices;
-    std::string buf;
-    while (std::getline(stream, buf)) {
-      std::stringstream line(buf);
-      std::string op;
-      line >> op;
-      if (op == "#")
-        continue;
-      else if (op == "v") {
-        Vertex vertex;
-        line >> vertex.coord.x >> vertex.coord.y >> vertex.coord.z;
-        vertex.color = {1, 1, 1};
-        vertex.uv = {1, 0};
-        vertices.push_back(vertex);
-      } else if (op == "f") {
-        Element e;
-        for (int i = 0; i != 3; ++i) {
-          std::string vf;
-          line >> vf;
-          std::replace(vf.begin(), vf.end(), '/', ' ');
-          std::stringstream ss(vf);
-          ss >> e.vertices[i];
-          // OBJ vertex index starts from 1, not from 0
-          e.vertices[i]--;
-        }
-        elements.push_back(e);
-      }
-    }
+    parse_obj(file, elements, vertices);
     auto model = Model(elements, vertices);
     this->swap(model);
   }

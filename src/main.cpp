@@ -71,7 +71,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   };
 
   // Enable depth test and antialiasing
-  // TODO: CHANGE TO VARIADIC TEMPLATES!
+  // TODO: CHANGE TO VARIADIC ARGUMENTS!
   gl::enable({GL_DEPTH_TEST, GL_MULTISAMPLE});
   glDepthFunc(GL_LESS);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
