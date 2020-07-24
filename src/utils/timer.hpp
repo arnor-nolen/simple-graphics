@@ -6,7 +6,7 @@
 struct Timer {
   Timer() : Timer("") {}
   Timer(const std::string_view &str)
-      : str_(str), start_time_(std::chrono::high_resolution_clock::now()) {}
+      : start_time_(std::chrono::high_resolution_clock::now()), str_(str) {}
   ~Timer() { stop(); }
 
   void stop() {

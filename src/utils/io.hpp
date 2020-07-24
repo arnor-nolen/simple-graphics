@@ -33,8 +33,8 @@ auto load_image(const std::string &path) {
   }
 }
 
-glm::vec3 parse_mtl(const std::vector<char> &mtl, glm::vec3 &color,
-                    std::string &texture_path) {
+void parse_mtl(const std::vector<char> &mtl, glm::vec3 &color,
+               std::string &texture_path) {
   // Timer timer("Parsing MTL file took ");
   auto stream = std::stringstream(mtl.data());
   std::string buf;
@@ -51,7 +51,6 @@ glm::vec3 parse_mtl(const std::vector<char> &mtl, glm::vec3 &color,
       line >> texture_path;
     }
   }
-  return color;
 }
 
 void parse_obj(const std::vector<char> &obj, std::vector<Element> &elements,
