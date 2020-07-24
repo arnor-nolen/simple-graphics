@@ -9,38 +9,6 @@
 #include "utils/io.hpp"
 #include "utils/timer.hpp"
 
-// GLuint texture_id;
-
-// void load_image(std::string path) {
-//   auto loaded_surface =
-//   sdl2::unique_ptr<SDL_Surface>(IMG_Load(path.c_str())); if (!loaded_surface)
-//   {
-//     std::cerr << "Unable to load image " << path << "!\n"
-//               << "SDL_image error: " << IMG_GetError() << "\n";
-//   } else {
-//     // SDL and OpenGL have different coordinates, we have to flip the surface
-//     auto flipped_surface = flip_vertical(loaded_surface);
-
-//     // Create texture
-//     glGenTextures(1, &texture_id);
-//     glBindTexture(GL_TEXTURE_2D, texture_id);
-
-//     // Load image
-//     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, flipped_surface->w,
-//                  flipped_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-//                  flipped_surface->pixels);
-
-//     // Nice trilinear filtering with mipmaps
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-//                     GL_LINEAR_MIPMAP_LINEAR);
-//     glGenerateMipmap(GL_TEXTURE_2D);
-//   }
-//   return;
-// }
-
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
 
@@ -74,18 +42,17 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   // TODO: CHANGE TO VARIADIC ARGUMENTS!
   gl::enable({GL_DEPTH_TEST, GL_MULTISAMPLE});
   glDepthFunc(GL_LESS);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-  // Load resources
-  // load_image("./resources/nazeeboPepega.png");
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // Create Vertex Array Object
   // Single VAO for entire application
   auto vao = gl::VertexArrayObject();
 
   auto resource_manager = ResourceManager();
-  resource_manager.load_model("./resources/teapot.obj");
-  resource_manager.load_model("./resources/cube.obj");
+  // Loading models
+  resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
+  resource_manager.load_model(
+      "./resources/lowpoly_helicopter_triangulated.obj");
 
   // Loading shaders
   std::vector<gl::Shader> shaders;
@@ -102,11 +69,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
 
   // We don't need shaders anymore as the program is compiled
   shaders.clear();
-
-  // GLuint texture_uniform = glGetUniformLocation(program.get(), "tex");
-  // glUniform1i(texture_uniform, 0);
-
-  // GLuint matrix_uniform = glGetUniformLocation(program.get(), "mvp_matrix");
 
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
@@ -143,14 +105,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
         glm::rotate(mvp_matrix1, rotation_time * glm::radians(180.0f),
                     glm::vec3(0.0f, 1.0f, 0.0f));
     models[0].set_mvp_matrix(rotated_mvp1);
-    // glUniformMatrix4fv(matrix_uniform, 1, GL_FALSE, &rotated_mvp1[0][0]);
 
     // Render all the models
     resource_manager.render_all();
 
     SDL_GL_SwapWindow(window.get());
   }
-  // glDeleteTextures(1, &texture_id);
 
   return 0;
 } catch (const std::exception &e) {

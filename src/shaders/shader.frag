@@ -5,9 +5,8 @@ in vec2 fragment_uv;
 
 out vec4 program_color;
 
-// uniform sampler2D tex;
+uniform sampler2D tex;
 
 void main() {
-  // program_color = texture(tex, fragment_uv) * vec4(fragment_color, 1.0);
-  program_color = vec4(fragment_color, 1.0);
+  program_color = texture(tex, fragment_uv) * vec4(fragment_color, 1.0);
 }

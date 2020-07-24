@@ -3,7 +3,7 @@
 #include <array>
 
 struct Element {
-  std::array<GLuint, 3> vertices;
+  std::array<unsigned int, 3> vertices;
 };
 
 struct Vertex {
