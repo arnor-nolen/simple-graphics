@@ -6,6 +6,7 @@
 #include "utils/timer.hpp"
 #include <fstream>
 #include <glm/glm.hpp>
+#include <vector>
 
 auto load_file(const std::string &path) {
   Timer timer("Loading file " + path + " took ");
@@ -35,11 +36,11 @@ auto load_image(const std::string &path) {
 
 void parse_mtl(const std::vector<char> &mtl, glm::vec3 &color,
                std::string &texture_path) {
-  // Timer timer("Parsing MTL file took ");
-  auto stream = std::stringstream(mtl.data());
+  Timer timer("Parsing MTL file took ");
+  auto stream = std::istringstream(mtl.data());
   std::string buf;
   while (std::getline(stream, buf)) {
-    std::stringstream line(buf);
+    std::istringstream line(buf);
     std::string op;
     line >> op;
     if (op == "newmtl") {
@@ -56,13 +57,14 @@ void parse_mtl(const std::vector<char> &mtl, glm::vec3 &color,
 void parse_obj(const std::vector<char> &obj, std::vector<Element> &elements,
                std::vector<Vertex> &vertices, std::string &texture_path) {
   Timer timer("Parsing both OBJ and MTL files took ");
-  auto stream = std::stringstream(obj.data());
+  auto stream = std::istringstream(obj.data());
   std::string buf;
   glm::vec3 color = {1.0, 1.0, 1.0};
   std::vector<glm::vec3> pure_vertices;
   std::vector<glm::vec2> uvs;
+
   while (std::getline(stream, buf)) {
-    std::stringstream line(buf);
+    std::istringstream line(buf);
     std::string op;
     line >> op;
     if (op == "mtllib") {
@@ -87,9 +89,10 @@ void parse_obj(const std::vector<char> &obj, std::vector<Element> &elements,
         std::string vf;
 
         line >> vf;
-        std::replace(vf.begin(), vf.end(), '/', ' ');
-        std::stringstream ss(vf);
-        ss >> pure_vertex_id >> uv_id;
+        // std::replace(vf.begin(), vf.end(), '/', ' ');
+        // std::istringstream ss(vf);
+        // ss >> pure_vertex_id >> uv_id;
+        sscanf_s(vf.c_str(), "%u/%u", &pure_vertex_id, &uv_id);
         // OBJ indices start from 1, not from 0
         pure_vertex_id--;
         uv_id--;

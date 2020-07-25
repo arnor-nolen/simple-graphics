@@ -9,11 +9,6 @@ struct Model {
   Model() {}
 
   Model(const std::vector<Element> &elements,
-        const std::vector<Vertex> &vertices)
-      : ebo_(GL_ELEMENT_ARRAY_BUFFER, elements),
-        vbo_(GL_ARRAY_BUFFER, vertices) {}
-
-  Model(const std::vector<Element> &elements,
         const std::vector<Vertex> &vertices, const std::string &texture_path)
       : ebo_(GL_ELEMENT_ARRAY_BUFFER, elements),
         vbo_(GL_ARRAY_BUFFER, vertices), texture_(texture_path) {}

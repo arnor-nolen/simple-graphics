@@ -21,7 +21,7 @@ void check_error_log(const GLuint &object,
 
   if (info_log_length > 0) {
     std::vector<char> error_message(info_log_length + 1);
-    glGetLog(object, info_log_length, NULL, &error_message.front());
+    glGetLog(object, info_log_length, NULL, error_message.data());
     std::cerr << "Error during shader compilation or program linkage!\n"
               << error_message.data() << '\n';
   }
@@ -50,7 +50,7 @@ struct Shader {
 
 private:
   void compile(const std::vector<char> &source) {
-    const char *shader_ptr = &source.front();
+    const char *shader_ptr = source.data();
 
     glShaderSource(shader_, 1, &shader_ptr, NULL);
     glCompileShader(shader_);
@@ -170,7 +170,7 @@ template <typename T> struct Buffer {
 private:
   void set_layout() {
     if (data_.size() > 0) {
-      glBufferData(buffer_type_, data_.size() * sizeof(T), &data_.front(),
+      glBufferData(buffer_type_, data_.size() * sizeof(T), data_.data(),
                    GL_STATIC_DRAW);
     }
   }
