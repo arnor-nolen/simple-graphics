@@ -142,8 +142,6 @@ template <typename T> struct Buffer {
   Buffer(const GLenum &buffer_type, const std::vector<T> &data)
       : buffer_type_(buffer_type), data_(data) {
     glGenBuffers(1, &buf_);
-    bind();
-    set_layout();
   }
   ~Buffer() { glDeleteBuffers(1, &buf_); }
 
@@ -172,8 +170,8 @@ template <typename T> struct Buffer {
 private:
   void set_layout() {
     if (data_.size() > 0) {
-      glNamedBufferData(buf_, data_.size() * sizeof(T), &data_.front(),
-                        GL_STATIC_DRAW);
+      glBufferData(buffer_type_, data_.size() * sizeof(T), &data_.front(),
+                   GL_STATIC_DRAW);
     }
   }
 

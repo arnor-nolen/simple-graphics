@@ -36,7 +36,7 @@ if (MSVC)
   # Suppress annoying warning that external libraries are compiled without debug info
   add_link_options(/IGNORE:4099)
 elseif(APPLE)
-  add_compile_options(-g -O3 -Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
+  add_compile_options(-g -O0 -Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
 else()
   message(FATAL_ERROR "Currently, only MSVC and APPLE architectures are officially supported. You need to link your libraries manually by editing CMakeLists.txt")
 endif()
