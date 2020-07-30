@@ -18,7 +18,7 @@ bool parse(const Container &data, std::vector<Point> &points,
   using x3::double_;
   using x3::uint_;
 
-  const auto lex_string_no_eol = x3::lexeme[+(char_ - x3::eol)];
+  const auto lex_string_no_eol = x3::lexeme[+(char_ - x3::ascii::space)];
   const auto lex_vertex = x3::lit('v') >> double_ >> double_ >> double_;
   const auto lex_face = uint_ >> '/' >> uint_ >> '/' >> uint_;
   const auto lex_faces = x3::lit('f') >> lex_face >> lex_face >> lex_face;
@@ -60,7 +60,7 @@ bool parse(const Container &data, std::vector<Point> &points,
   bool r = x3::phrase_parse(first, last,
                             (lex_vertex[lambda_vertex] | lex_uv[lambda_uv] |
                              lex_faces[lambda_faces] | lex_mtl[lambda_mtl] |
-                             lex_string_no_eol) %
+                             *lex_string_no_eol) %
                                 x3::eol,
                             x3::ascii::blank);
 

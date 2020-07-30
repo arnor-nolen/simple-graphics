@@ -3,7 +3,6 @@
 #include "utils/primitives.hpp"
 #include "utils/timer.hpp"
 #include <boost/spirit/home/x3.hpp>
-#include <sstream>
 #include <vector>
 
 namespace parser::mtl {
@@ -19,7 +18,7 @@ bool parse(const Container &data, Color &color, std::string &texture_path) {
 
   color = {1.0, 1.0, 1.0};
 
-  const auto lex_string_no_eol = x3::lexeme[+(char_ - x3::eol)];
+  const auto lex_string_no_eol = x3::lexeme[+(char_ - x3::ascii::space)];
   const auto lex_diffuse = x3::lit("Kd") >> double_ >> double_ >> double_;
   const auto lex_map_diffuse = x3::lit("map_Kd") >> lex_string_no_eol;
 
@@ -36,7 +35,7 @@ bool parse(const Container &data, Color &color, std::string &texture_path) {
   bool r = x3::phrase_parse(first, last,
                             (lex_diffuse[lambda_diffuse] |
                              lex_map_diffuse[lambda_map_diffuse] |
-                             -lex_string_no_eol) %
+                             *lex_string_no_eol) %
                                 x3::eol,
                             x3::ascii::blank);
 
