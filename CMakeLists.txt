@@ -18,6 +18,7 @@ conan_cmake_run(
   sdl2_image/2.0.5@bincrafters/stable
   glew/2.1.0@bincrafters/stable
   glm/0.9.9.8
+  boost/1.73.0
   BASIC_SETUP
   CMAKE_TARGETS
   NO_OUTPUT_DIRS
@@ -32,8 +33,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 
 # Set platform-specific stuff
 if (MSVC)
-  add_compile_options(/W4)
-  # Suppress annoying warning that external libraries are compiled without debug info
+  # Strip out /RTC1 for production builds
+  # string(REGEX REPLACE "[/|-]RTC[^ ]*" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+
+  # Suppress compiler warnings:
+  # 1. Boost.Spirit.X3 global variable shadowing.
+  add_compile_options(/W4 /Od /wd4459)
+
+  # Suppress linker warnings:
+  # 1. external libraries are compiled without debug info.
   add_link_options(/IGNORE:4099)
 elseif(APPLE)
   add_compile_options(-g -O0 -Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
@@ -54,4 +62,4 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 #Link libraries
-target_link_libraries(${PROJECT_NAME} CONAN_PKG::glew CONAN_PKG::glm CONAN_PKG::sdl2 CONAN_PKG::sdl2_image)
+target_link_libraries(${PROJECT_NAME} CONAN_PKG::glew CONAN_PKG::glm CONAN_PKG::sdl2 CONAN_PKG::sdl2_image CONAN_PKG::boost)

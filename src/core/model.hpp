@@ -1,24 +1,25 @@
 #pragma once
 
 #include "utils/GL.hpp"
-#include "utils/io.hpp"
+#include "utils/parsers/parsers.hpp"
 #include "utils/primitives.hpp"
 #include <GL/glew.h>
 
 struct Model {
   Model() {}
 
-  Model(const std::vector<Element> &elements,
-        const std::vector<Vertex> &vertices, const std::string &texture_path)
+  Model(const std::vector<gl::Element> &elements,
+        const std::vector<gl::Vertex> &vertices,
+        const std::string &texture_path)
       : ebo_(GL_ELEMENT_ARRAY_BUFFER, elements),
         vbo_(GL_ARRAY_BUFFER, vertices), texture_(texture_path) {}
 
   Model(const std::string &path) {
     auto file = load_file(path);
-    std::vector<Element> elements;
-    std::vector<Vertex> vertices;
+    std::vector<gl::Element> elements;
+    std::vector<gl::Vertex> vertices;
     std::string texture_path;
-    parse_obj(file, elements, vertices, texture_path);
+    parser::parse_model(file, elements, vertices, texture_path);
     auto model = Model(elements, vertices, texture_path);
     this->swap(model);
   }
@@ -70,8 +71,8 @@ private:
                           (void *)(6 * sizeof(float)));
   }
 
-  gl::Buffer<Element> ebo_;
-  gl::Buffer<Vertex> vbo_;
+  gl::Buffer<gl::Element> ebo_;
+  gl::Buffer<gl::Vertex> vbo_;
   glm::mat4 mvp_matrix_ = glm::mat4(1.0f);
   gl::Texture texture_;
 };
