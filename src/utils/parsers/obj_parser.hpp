@@ -7,9 +7,9 @@
 namespace parser::obj {
 
 template <typename Container>
-bool parse(const Container &data, std::vector<Point> &points,
+auto parse(const Container &data, std::vector<Point> &points,
            std::vector<TextureCoords> &uvs, std::vector<Face> &faces,
-           Color &color, std::string &texture_path) {
+           Color &color, std::string &texture_path) -> bool {
 
   namespace x3 = boost::spirit::x3;
 

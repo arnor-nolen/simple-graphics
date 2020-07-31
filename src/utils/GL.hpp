@@ -4,37 +4,21 @@
 #include <GL/glew.h>
 
 namespace gl {
-void enable(const std::vector<GLenum> &features) {
-  for (const auto &feature : features) {
-    glEnable(feature);
-  }
-}
+
+void enable(const std::vector<GLenum> &features);
 
 void check_error_log(const GLuint &object,
                      void (*glGet)(GLuint, GLenum, GLint *),
-                     void (*glGetLog)(GLuint, GLsizei, GLsizei *, GLchar *)) {
-  auto result = GL_FALSE;
-  int info_log_length = 0;
-
-  glGet(object, GL_COMPILE_STATUS, &result);
-  glGet(object, GL_INFO_LOG_LENGTH, &info_log_length);
-
-  if (info_log_length > 0) {
-    std::vector<char> error_message(info_log_length + 1);
-    glGetLog(object, info_log_length, NULL, error_message.data());
-    std::cerr << "Error during shader compilation or program linkage!\n"
-              << error_message.data() << '\n';
-  }
-}
+                     void (*glGetLog)(GLuint, GLsizei, GLsizei *, GLchar *));
 
 struct Shader {
-  Shader(GLenum shader_type) : shader_(glCreateShader(shader_type)) {}
+  explicit Shader(GLenum shader_type) : shader_(glCreateShader(shader_type)) {}
   ~Shader() { glDeleteShader(shader_); }
 
   Shader(const Shader &) = delete;
-  Shader(Shader &&other) { swap(other); }
-  const Shader &operator=(const Shader &) = delete;
-  const Shader &operator=(Shader &&other) {
+  Shader(Shader &&other) noexcept { swap(other); }
+  auto operator=(const Shader &) -> const Shader & = delete;
+  auto operator=(Shader &&other) noexcept -> Shader & {
     swap(other);
     return *this;
   }
@@ -46,18 +30,18 @@ struct Shader {
     compile(source);
   }
 
-  const auto &get() const { return shader_; }
+  [[nodiscard]] auto get() const -> const auto & { return shader_; }
 
 private:
-  void compile(const std::vector<char> &source) {
+  void compile(const std::vector<char> &source) const {
     const char *shader_ptr = source.data();
 
-    glShaderSource(shader_, 1, &shader_ptr, NULL);
+    glShaderSource(shader_, 1, &shader_ptr, nullptr);
     glCompileShader(shader_);
     check_error_log(shader_, glGetShaderiv, glGetShaderInfoLog);
   }
 
-  GLuint shader_;
+  GLuint shader_ = 0;
 };
 
 struct Program {
@@ -65,9 +49,9 @@ struct Program {
   ~Program() { glDeleteProgram(shader_program_); }
 
   Program(const Program &) = delete;
-  Program(Program &&other) { swap(other); }
-  const Program &operator=(const Program &) = delete;
-  const Program &operator=(Program &&other) {
+  Program(Program &&other) noexcept { swap(other); }
+  auto operator=(const Program &) -> const Program & = delete;
+  auto operator=(Program &&other) noexcept -> Program & {
     swap(other);
     return *this;
   };
@@ -76,11 +60,13 @@ struct Program {
     std::swap(this->shader_program_, other.shader_program_);
   }
 
-  const auto &get() const { return shader_program_; }
+  [[nodiscard]] auto get() const -> const auto & { return shader_program_; }
 
-  const auto &get_matrix_uniform() const { return matrix_uniform_; }
+  [[nodiscard]] auto get_matrix_uniform() const -> const auto & {
+    return matrix_uniform_;
+  }
 
-  void use() { glUseProgram(shader_program_); }
+  void use() const { glUseProgram(shader_program_); }
 
   void compile(const std::vector<Shader> &shaders) {
     attach(shaders);
@@ -112,12 +98,12 @@ private:
     }
   }
 
-  void link() {
+  void link() const {
     glLinkProgram(shader_program_);
     check_error_log(shader_program_, glGetProgramiv, glGetProgramInfoLog);
   }
 
-  void set_input() {
+  void set_input() const {
     // Enable shader attributes
     GLint posAttrib = glGetAttribLocation(shader_program_, "position");
     glEnableVertexAttribArray(posAttrib);
@@ -129,12 +115,12 @@ private:
     glEnableVertexAttribArray(uvAttrib);
   }
 
-  void set_output() {
+  void set_output() const {
     glBindFragDataLocation(shader_program_, 0, "program_color");
   }
 
-  GLuint shader_program_;
-  GLuint matrix_uniform_;
+  GLuint shader_program_ = 0;
+  GLuint matrix_uniform_ = 0;
 };
 
 template <typename T> struct Buffer {

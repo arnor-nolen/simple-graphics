@@ -7,7 +7,8 @@
 
 namespace parser::mtl {
 template <typename Container>
-bool parse(const Container &data, Color &color, std::string &texture_path) {
+auto parse(const Container &data, Color &color, std::string &texture_path)
+    -> bool {
   Timer timer("Parsing MTL file took ");
 
   namespace x3 = boost::spirit::x3;
