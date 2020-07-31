@@ -21,7 +21,7 @@
         "C:/Users/andre/.conan/data/libjpeg/9c/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
         "C:/Users/andre/.conan/data/jbig/20160605/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include"
       ],
-      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
+      "defines": [],
       "cStandard": "c11",
       "cppStandard": "c++17",
       "intelliSenseMode": "msvc-x64"

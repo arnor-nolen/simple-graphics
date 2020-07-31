@@ -30,21 +30,42 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 
 # Set platform-specific stuff
-if (MSVC)
-  # Strip out /RTC1 for production builds
-  # string(REGEX REPLACE "[/|-]RTC[^ ]*" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
   # Suppress compiler warnings:
   # 1. Boost.Spirit.X3 global variable shadowing.
-  add_compile_options(/W4 /Od /wd4459)
+  add_compile_options(/W4 /wd4459)
 
   # Suppress linker warnings:
   # 1. external libraries are compiled without debug info.
   add_link_options(/IGNORE:4099)
-elseif(APPLE)
-  add_compile_options(-g -O0 -Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
+
+  if(BUILD_TYPE STREQUAL "DEBUG")
+    add_compile_options(/Od)
+  elseif(BUILD_TYPE STREQUAL "RELEASE")
+    # Strip out /RTC1 and /Zi for production builds
+    string(REGEX REPLACE "[/|-]RTC[^ ]*" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+    string(REGEX REPLACE "[/|-]Zi[^ ]*" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+    add_compile_options(/O2)
+  else()
+  endif()
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+  # -fvisibility=hidden for external libraries
+  add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
+
+  if(BUILD_TYPE STREQUAL "DEBUG")
+    add_compile_options(-g -O0)
+  elseif(BUILD_TYPE STREQUAL "RELEASE")
+    add_compile_options(-O3)
+  else()
+  endif()
+
 else()
-  message(FATAL_ERROR "Currently, only MSVC and APPLE architectures are officially supported. You need to link your libraries manually by editing CMakeLists.txt")
+  message(FATAL_ERROR "Currently, only MSVC and AppleClang compilers are officially supported. You need to set compiler options manually by editing CMakeLists.txt")
 endif()
 
 # Set targets
