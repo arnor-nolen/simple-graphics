@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL_image.h>
 
 namespace sdl2 {
 struct sdl2_deleter {
@@ -36,17 +37,6 @@ struct SDL_image {
     }
   }
   ~SDL_image() { IMG_Quit(); }
-};
-
-struct VertexArrayObject {
-  VertexArrayObject() {
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
-  }
-  ~VertexArrayObject() { glDeleteVertexArrays(1, &vao_); }
-
-private:
-  GLuint vao_;
 };
 
 void gl_setAttributes(const std::vector<std::pair<SDL_GLattr, int>> &init) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <glm/glm.hpp>
 
 struct Point {
   double x;
