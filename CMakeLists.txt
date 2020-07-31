@@ -69,7 +69,8 @@ else()
 endif()
 
 # Set targets
-add_executable (${PROJECT_NAME} src/main.cpp)
+file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
+add_executable (${PROJECT_NAME} ${SOURCE_FILES})
 
 # Precompiled headers for faster compilation times
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/pch.h)
