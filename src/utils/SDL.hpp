@@ -10,41 +10,49 @@
 #include <SDL_image.h>
 
 namespace sdl2 {
+
+void gl_setAttributes(const std::vector<std::pair<SDL_GLattr, int>> &init);
+
 struct sdl2_deleter {
-  void operator()(SDL_Surface *p) const { SDL_FreeSurface(p); }
-  void operator()(SDL_Window *p) const { SDL_DestroyWindow(p); }
-  void operator()(SDL_Renderer *p) const { SDL_DestroyRenderer(p); }
-  void operator()(SDL_Texture *p) const { SDL_DestroyTexture(p); }
+  void operator()(SDL_Surface *p) const;
+  void operator()(SDL_Window *p) const;
+  void operator()(SDL_Renderer *p) const;
+  void operator()(SDL_Texture *p) const;
 };
 
 template <typename T> using unique_ptr = std::unique_ptr<T, sdl2_deleter>;
 
 struct SDL {
-  explicit SDL(Uint32 flags) { SDL_Init(flags); }
-  ~SDL() { SDL_Quit(); }
-};
+  explicit SDL(Uint32 flags);
+  ~SDL();
+
+  SDL(const SDL &other) = delete;
+  SDL(SDL &&other) = delete;
+  auto operator=(const SDL &) -> SDL & = delete;
+  auto operator=(SDL &&other) noexcept -> SDL & = delete;
+}; // namespace sdl2
 
 struct SDL_Context {
-  explicit SDL_Context(const sdl2::unique_ptr<SDL_Window> &w)
-      : context_(SDL_GL_CreateContext(w.get())) {}
-  ~SDL_Context() { SDL_GL_DeleteContext(context_); }
+  explicit SDL_Context(const sdl2::unique_ptr<SDL_Window> &w);
+  ~SDL_Context();
+
+  SDL_Context(const SDL_Context &other) = delete;
+  SDL_Context(SDL_Context &&other) = delete;
+  auto operator=(const SDL_Context &) -> SDL_Context & = delete;
+  auto operator=(SDL_Context &&other) noexcept -> SDL_Context & = delete;
 
 private:
   SDL_GLContext context_;
 };
 
 struct SDL_image {
-  explicit SDL_image(int flags) {
-    // Check if IMG_Init returns the flags we requested
-    if (!(static_cast<bool>(static_cast<unsigned int>(IMG_Init(flags)) &
-                            static_cast<unsigned int>(flags)))) {
-      throw std::runtime_error(
-          "SDL_image could not initialize! SDL_image Error: " +
-          std::string(IMG_GetError()) + '\n');
-    }
-  }
-  ~SDL_image() { IMG_Quit(); }
+  explicit SDL_image(int flags);
+  ~SDL_image();
+
+  SDL_image(const SDL_image &other) = delete;
+  SDL_image(SDL_image &&other) = delete;
+  auto operator=(const SDL_image &) -> SDL_image & = delete;
+  auto operator=(SDL_image &&other) noexcept -> SDL_image & = delete;
 };
 
-void gl_setAttributes(const std::vector<std::pair<SDL_GLattr, int>> &init);
 } // namespace sdl2

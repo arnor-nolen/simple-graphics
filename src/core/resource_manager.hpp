@@ -1,26 +1,28 @@
 #pragma once
 
-#include <core/model.hpp>
+#include "core/model.hpp"
 #include <vector>
 
 struct ResourceManager {
-  ResourceManager() {}
-  ~ResourceManager() {}
+  ResourceManager() = default;
+  ~ResourceManager() = default;
 
-  template <typename... Args> void load_model(Args &&... args) {
-    models_.emplace_back(args...);
-  }
+  ResourceManager(const ResourceManager &) = delete;
+  ResourceManager(ResourceManager &&other) noexcept = delete;
+  auto operator=(const ResourceManager &) -> ResourceManager & = delete;
+  auto operator=(ResourceManager &&other) noexcept
+      -> ResourceManager & = delete;
 
-  void render_all() {
-    for (auto &model : models_) {
-      model.render(program_.get_matrix_uniform());
-    }
-  }
+  template <typename... Args> void load_model(Args &&... args);
 
-  auto &get_models() { return models_; }
-  auto &get_program_ptr() { return program_; }
+  void render_all();
+
+  auto get_models() -> std::vector<Model> &;
+  auto get_program_ptr() -> gl::Program &;
 
 private:
   std::vector<Model> models_;
   gl::Program program_;
 };
+
+#include "core/resource_manager_impl.hpp"

@@ -116,7 +116,6 @@ if(GENERATE_INCLUDE_PATHS)
   # Modify settings.json to include paths for clang-tidy syntax highlight 
   #-------------------------------------------------------------
   set(SETTINGS_JSON_FILE_LOCATION ".vscode/settings.json")
-  file(READ ${SETTINGS_JSON_FILE_LOCATION} SETTINGS_JSON_FILE)
 
   # Combine all includePaths into one string
   set(REGEX_REPLACE_STRING "\"-std=c++17\",")
@@ -128,8 +127,14 @@ if(GENERATE_INCLUDE_PATHS)
 
   string(REGEX REPLACE ".$" "" REGEX_REPLACE_STRING ${REGEX_REPLACE_STRING})
 
-  # Replace settings.json
-  string(REGEX REPLACE "(clang-tidy.compilerArgs[^\\[]*\\[)([^\]]*)(\])" "\\1${REGEX_REPLACE_STRING}\\3" SETTINGS_JSON_FILE ${SETTINGS_JSON_FILE})
+  if (EXISTS ".vscode/settings.json")
+    file(READ ${SETTINGS_JSON_FILE_LOCATION} SETTINGS_JSON_FILE)
+    # Replace settings.json
+    string(REGEX REPLACE "(clang-tidy.compilerArgs[^\\[]*\\[)([^\]]*)(\])" "\\1${REGEX_REPLACE_STRING}\\3" SETTINGS_JSON_FILE ${SETTINGS_JSON_FILE})
+  else()
+    # Generate settings.json
+    set(SETTINGS_JSON_FILE "{\"clang-tidy.compilerArgs\": [${REGEX_REPLACE_STRING}]}")
+  endif()
   
   file(WRITE ${SETTINGS_JSON_FILE_LOCATION} ${SETTINGS_JSON_FILE})
 endif()

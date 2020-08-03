@@ -9,29 +9,52 @@
 #include "utils/io.hpp"
 #include "utils/timer.hpp"
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
+auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
+
+  constexpr struct {
+    int major;
+    int minor;
+  } opengl_version = {4, 1};
+
+  constexpr int stencil_size = 8;
 
   // TODO: CHANGE TO VARIADIC ARGUMENTS!
   sdl2::gl_setAttributes(
       {{SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE},
-       {SDL_GL_CONTEXT_MAJOR_VERSION, 4},
-       {SDL_GL_CONTEXT_MINOR_VERSION, 1},
-       {SDL_GL_STENCIL_SIZE, 8}});
+       {SDL_GL_CONTEXT_MAJOR_VERSION, opengl_version.major},
+       {SDL_GL_CONTEXT_MINOR_VERSION, opengl_version.minor},
+       {SDL_GL_STENCIL_SIZE, stencil_size}});
+
+  constexpr struct {
+    int buffers;
+    int samples;
+  } multisample = {1, 4};
 
   // Enable 4x Antialiasing
-  sdl2::gl_setAttributes(
-      {{SDL_GL_MULTISAMPLEBUFFERS, 1}, {SDL_GL_MULTISAMPLESAMPLES, 4}});
+  sdl2::gl_setAttributes({{SDL_GL_MULTISAMPLEBUFFERS, multisample.buffers},
+                          {SDL_GL_MULTISAMPLESAMPLES, multisample.samples}});
+
+  constexpr struct {
+    int x;
+    int y;
+  } window_position = {100, 100};
+
+  constexpr struct {
+    int w;
+    int h;
+  } window_resolution = {800, 600};
 
   // Create window
-  auto window = sdl2::unique_ptr<SDL_Window>(
-      SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL));
+  auto window = sdl2::unique_ptr<SDL_Window>(SDL_CreateWindow(
+      "Simple graphics", window_position.x, window_position.y,
+      window_resolution.w, window_resolution.h, SDL_WINDOW_OPENGL));
   auto context = sdl2::SDL_Context(window);
 
   // Enable GLEW and SDL_image
   glewExperimental = GL_TRUE;
   glewInit();
-  auto sdl_image = sdl2::SDL_image(IMG_INIT_PNG | IMG_INIT_JPG);
+  auto sdl_image = sdl2::SDL_image(IMG_INIT_PNG);
 
   // Enable VSync
   if (SDL_GL_SetSwapInterval(1) == -1) {
@@ -72,11 +95,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
 
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
-      glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+      glm::perspective(glm::radians(45.0F), 4.0F / 3.0F, 0.1F, 100.0F);
   glm::mat4 view_matrix =
       glm::lookAt(glm::vec3(12, 9, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-  auto model_matrix1 = glm::mat4(1.0f);
-  auto model_matrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0));
+  auto model_matrix1 = glm::mat4(1.0F);
+  auto model_matrix2 = glm::translate(glm::mat4(1.0F), glm::vec3(0, 5, 0));
   glm::mat4 mvp_matrix1 = projection_matrix * view_matrix * model_matrix1;
   glm::mat4 mvp_matrix2 = projection_matrix * view_matrix * model_matrix2;
 
@@ -88,22 +111,24 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) try {
   auto t_start = std::chrono::high_resolution_clock::now();
   while (true) {
     // Timer timer;
-    if (SDL_PollEvent(&windowEvent)) {
-      if (windowEvent.type == SDL_QUIT)
+    if (SDL_PollEvent(&windowEvent) != 0) {
+      if (windowEvent.type == SDL_QUIT) {
         break;
+      }
     }
     // Clear the screen to black
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
+    glClear(static_cast<unsigned int>(GL_COLOR_BUFFER_BIT) |
+            static_cast<unsigned int>(GL_DEPTH_BUFFER_BIT));
 
     auto t_now = std::chrono::high_resolution_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
 
-    auto rotation_time = time.count() * 0.001f * 0.001f * 0.1f;
+    auto rotation_time = time.count() * 0.001F * 0.001F * 0.1F;
     auto rotated_mvp1 =
-        glm::rotate(mvp_matrix1, rotation_time * glm::radians(180.0f),
-                    glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::rotate(mvp_matrix1, rotation_time * glm::radians(180.0F),
+                    glm::vec3(0.0F, 1.0F, 0.0F));
     models[0].set_mvp_matrix(rotated_mvp1);
 
     // Render all the models
