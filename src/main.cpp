@@ -98,8 +98,11 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
       glm::perspective(glm::radians(45.0F), 4.0F / 3.0F, 0.1F, 100.0F);
   glm::mat4 view_matrix =
       glm::lookAt(glm::vec3(12, 9, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-  auto model_matrix1 = glm::mat4(1.0F);
-  auto model_matrix2 = glm::translate(glm::mat4(1.0F), glm::vec3(0, 5, 0));
+  auto model_matrix1 =
+      glm::scale(glm::mat4(1.0F), glm::vec3(0.01F, 0.01F, 0.01F));
+  auto model_matrix2 = glm::translate(
+      glm::scale(glm::mat4(1.0F), glm::vec3(0.001F, 0.001F, 0.001F)),
+      glm::vec3(0, 5, 0));
   glm::mat4 mvp_matrix1 = projection_matrix * view_matrix * model_matrix1;
   glm::mat4 mvp_matrix2 = projection_matrix * view_matrix * model_matrix2;
 
@@ -125,9 +128,12 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
 
-    auto rotation_time = time.count() * 0.001F * 0.001F * 0.1F;
+    constexpr float time_delta = 0.001F * 0.001F * 0.1F;
+    constexpr float pi_rad = 180.0F;
+
+    auto rotation_time = time.count() * time_delta;
     auto rotated_mvp1 =
-        glm::rotate(mvp_matrix1, rotation_time * glm::radians(180.0F),
+        glm::rotate(mvp_matrix1, rotation_time * glm::radians(pi_rad),
                     glm::vec3(0.0F, 1.0F, 0.0F));
     models[0].set_mvp_matrix(rotated_mvp1);
 

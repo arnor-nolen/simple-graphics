@@ -34,8 +34,8 @@ auto parse(const Container &data, std::vector<Point> &points,
   };
 
   auto lambda_vertex = [&](auto &ctx) {
-    Point p = {at_c<0>(x3::_attr(ctx)) / 100, at_c<1>(x3::_attr(ctx)) / 100,
-               at_c<2>(x3::_attr(ctx)) / 100};
+    Point p = {at_c<0>(x3::_attr(ctx)), at_c<1>(x3::_attr(ctx)),
+               at_c<2>(x3::_attr(ctx))};
     points.push_back(std::move(p));
   };
 

@@ -18,8 +18,6 @@ auto parse(const Container &data, Color &color, std::string &texture_path)
   using x3::char_;
   using x3::double_;
 
-  color = {1.0, 1.0, 1.0};
-
   const auto lex_string_no_eol = x3::lexeme[+(char_ - x3::ascii::space)];
   const auto lex_diffuse = x3::lit("Kd") >> double_ >> double_ >> double_;
   const auto lex_map_diffuse = x3::lit("map_Kd") >> lex_string_no_eol;

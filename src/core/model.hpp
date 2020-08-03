@@ -28,7 +28,7 @@ struct Model {
 
 private:
   void bind_buffers();
-  void set_layout();
+  void static set_layout();
 
   gl::Buffer<gl::Element> ebo_;
   gl::Buffer<gl::Vertex> vbo_;
