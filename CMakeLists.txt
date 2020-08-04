@@ -72,9 +72,6 @@ endif()
 file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
 add_executable (${PROJECT_NAME} ${SOURCE_FILES})
 
-# Precompiled headers for faster compilation times
-target_precompile_headers(${PROJECT_NAME} PUBLIC src/pch.h)
-
 # Use c++17 standard
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 

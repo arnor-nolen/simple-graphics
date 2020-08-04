@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "core/model.hpp"
 #include "core/resource_manager.hpp"
 
@@ -8,6 +6,7 @@
 #include "utils/flip_vertical.hpp"
 #include "utils/io.hpp"
 #include "utils/timer.hpp"
+#include <glm/gtx/transform.hpp>
 
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
