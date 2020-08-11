@@ -82,7 +82,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 # Generate c_cpp_properties.json for VSCode code highlighting
 #-------------------------------------------------------------
 if(GENERATE_INCLUDE_PATHS)
-  message(INFO "Generating include paths for VSCode CPP extension...")
+  message(STATUS "Generating include paths for VSCode CPP extension and clang-tidy plugin...")
   set(VSCODE_CPP_TOOLS_FILE_LOCATION ".vscode/c_cpp_properties.json")
 
   if(WIN32)

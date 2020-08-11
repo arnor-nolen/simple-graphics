@@ -7,7 +7,7 @@
         "cwd": "${workspaceRoot}/build"
       },
       "command": "cmake",
-      "args": ["..", "-DCMAKE_BUILD_TYPE=DEBUG", "-DGENERATE_INCLUDE_PATHS=ON"]
+      "args": ["..", "-DCMAKE_BUILD_TYPE=DEBUG", "-DGENERATE_INCLUDE_PATHS=OFF"]
     },
     {
       "type": "shell",
