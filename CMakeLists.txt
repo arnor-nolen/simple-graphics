@@ -12,12 +12,7 @@ conan_add_remote(NAME bincrafters URL https://api.bintray.com/conan/bincrafters/
 
 # Installing dependencies
 conan_cmake_run(
-  REQUIRES
-  sdl2/2.0.12@bincrafters/stable
-  sdl2_image/2.0.5@bincrafters/stable
-  glew/2.1.0@bincrafters/stable
-  glm/0.9.9.8
-  boost/1.73.0
+  CONANFILE conanfile.txt
   BASIC_SETUP
   CMAKE_TARGETS
   NO_OUTPUT_DIRS
@@ -137,4 +132,4 @@ if(GENERATE_INCLUDE_PATHS)
 endif()
 
 #Link libraries
-target_link_libraries(${PROJECT_NAME} CONAN_PKG::glew CONAN_PKG::glm CONAN_PKG::sdl2 CONAN_PKG::sdl2_image CONAN_PKG::boost)
+target_link_libraries(${PROJECT_NAME} ${CONAN_TARGETS})
