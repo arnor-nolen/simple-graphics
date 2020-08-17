@@ -8,10 +8,10 @@ Model::Model(const std::vector<gl::Element> &elements,
 
 Model::Model(const std::string &path) {
   auto file = load_file(path);
-  std::vector<gl::Element> elements;
-  std::vector<gl::Vertex> vertices;
+  auto elements = std::vector<gl::Element>();
+  auto vertices = std::vector<gl::Vertex>();
   std::string texture_path;
-  parser::parse_model(file, elements, vertices, texture_path);
+  parser::parse_model_fbx(file, elements, vertices, texture_path);
   auto model = Model(elements, vertices, texture_path);
   this->swap(model);
 }

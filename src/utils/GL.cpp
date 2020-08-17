@@ -128,14 +128,15 @@ VertexArrayObject::~VertexArrayObject() { glDeleteVertexArrays(1, &vao_); }
 Texture::Texture(const std::string &path) {
   // Load SDL_image surface from file
   auto surface = load_image(path);
+}
+
+Texture(size_t width, size_t height, void *pixels) {
   // Create texture
   glGenTextures(1, &texture_id_);
   bind();
-
   // Load image
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, surface->pixels);
-
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, pixels);
   // Nice trilinear filtering with mipmaps
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
