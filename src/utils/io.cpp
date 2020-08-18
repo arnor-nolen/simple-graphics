@@ -1,5 +1,7 @@
 #include "utils/io.hpp"
 
+#include <SDL.h>
+
 auto load_file(const std::string &path) -> std::vector<char> {
   Timer timer("Loading file " + path + " took ");
   std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -21,6 +23,9 @@ auto load_image(const std::string &path) -> sdl2::unique_ptr<SDL_Surface> {
                              "!\nSDL_image error: " + IMG_GetError() + '\n');
   }
   // SDL and OpenGL have different coordinates, we have to flip the surface
-  auto flipped_surface = flip_vertical(loaded_surface);
+  auto converted_surface =
+      sdl2::unique_ptr<SDL_Surface>(SDL_ConvertSurfaceFormat(
+          loaded_surface.get(), SDL_PIXELFORMAT_RGBA32, 0));
+  auto flipped_surface = flip_vertical(converted_surface);
   return flipped_surface;
 }

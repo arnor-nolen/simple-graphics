@@ -9,10 +9,11 @@ Model::Model(const std::string &path) {
   auto file = load_file(path);
   auto elements = std::vector<gl::Element>();
   auto vertices = std::vector<gl::Vertex>();
-  auto texture = gl::Texture();
-  parser::parse_model_fbx(file, elements, vertices, texture);
-  auto model = Model(elements, vertices, texture);
-  this->swap(model);
+  gl::Texture texture;
+  parser::parse_model_assimp(file, elements, vertices, texture, "fbx");
+  ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, elements);
+  vbo_ = gl::Buffer<gl::Vertex>(GL_ARRAY_BUFFER, vertices);
+  texture_ = gl::Texture(std::move(texture));
 }
 
 Model::Model(Model &&other) noexcept { swap(other); };

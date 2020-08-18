@@ -6,8 +6,9 @@
 namespace parser {
 void parse_model(const std::vector<char> &data,
                  std::vector<gl::Element> &elements,
-                 std::vector<gl::Vertex> &vertices, std::string &texture_path);
-void parse_model_fbx(const std::vector<char> &data,
-                     std::vector<gl::Element> &elements,
-                     std::vector<gl::Vertex> &vertices, gl::Texture &texture);
+                 std::vector<gl::Vertex> &vertices, gl::Texture &texture);
+void parse_model_assimp(const std::vector<char> &data,
+                        std::vector<gl::Element> &elements,
+                        std::vector<gl::Vertex> &vertices, gl::Texture &texture,
+                        const std::string_view file_type);
 } // namespace parser

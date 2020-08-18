@@ -8,14 +8,17 @@
 namespace parser {
 void parse_model(const std::vector<char> &data,
                  std::vector<gl::Element> &elements,
-                 std::vector<gl::Vertex> &vertices, std::string &texture_path) {
+                 std::vector<gl::Vertex> &vertices, gl::Texture &texture) {
   Timer timer("Parsing both OBJ and MTL files took ");
 
   Color color = {1.0, 1.0, 1.0};
   std::vector<Point> points;
   std::vector<parser::obj::TextureCoords> uvs;
   std::vector<parser::obj::Face> faces;
+  std::string texture_path;
   parser::obj::parse(data, points, uvs, faces, color, texture_path);
+
+  texture = gl::Texture(texture_path);
 
   for (const auto &face : faces) {
     auto v = std::array<gl::Vertex, 3>();
@@ -39,15 +42,15 @@ void parse_model(const std::vector<char> &data,
   }
 }
 
-void parse_model_fbx(const std::vector<char> &data,
-                     std::vector<gl::Element> &elements,
-                     std::vector<gl::Vertex> &vertices, gl::Texture &texture) {
-  Timer timer("Parsing FBX file took ");
+void parse_model_assimp(const std::vector<char> &data,
+                        std::vector<gl::Element> &elements,
+                        std::vector<gl::Vertex> &vertices, gl::Texture &texture,
+                        const std::string_view file_type) {
+  Timer timer("Parsing assimp file took ");
 
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFileFromMemory(
-      data.data(), data.size(), aiProcess_Triangulate, "fbx");
-  // const aiScene *scene = importer.ReadFile("./resources/AK-47.fbx", 0);
+      data.data(), data.size(), aiProcess_Triangulate, file_type.data());
 
   if (scene == nullptr) {
     const std::string error = importer.GetErrorString();
@@ -85,13 +88,13 @@ void parse_model_fbx(const std::vector<char> &data,
       vertices.push_back(std::move(v));
     }
   }
-  std::cout << vertices.size() << '\n';
-  std::cout << elements.size() << '\n';
-  for (const auto &i : vertices) {
-    std::cout << i.coord.x << ' ' << i.coord.y << ' ' << i.coord.z << ' '
-              << i.color.r << ' ' << i.color.g << ' ' << i.color.b << ' '
-              << i.uv.x << ' ' << i.uv.y << '\n';
-  }
+  // std::cout << vertices.size() << '\n';
+  // std::cout << elements.size() << '\n';
+  // for (const auto &i : vertices) {
+  //   std::cout << i.coord.x << ' ' << i.coord.y << ' ' << i.coord.z << ' '
+  //             << i.color.r << ' ' << i.color.g << ' ' << i.color.b << ' '
+  //             << i.uv.x << ' ' << i.uv.y << '\n';
+  // }
 
   // throw std::runtime_error("Exit!");
 }
