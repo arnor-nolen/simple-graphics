@@ -128,9 +128,27 @@ VertexArrayObject::~VertexArrayObject() { glDeleteVertexArrays(1, &vao_); }
 Texture::Texture(const std::string &path) {
   // Load SDL_image surface from file
   auto surface = load_image(path);
+  create(surface->w, surface->h, surface->pixels);
 }
 
-Texture(size_t width, size_t height, void *pixels) {
+Texture::Texture(size_t width, size_t height, void *pixels) {
+  create(width, height, pixels);
+}
+
+Texture::~Texture() { glDeleteTextures(1, &texture_id_); }
+
+Texture::Texture(Texture &&other) noexcept { swap(other); }
+auto Texture::operator=(Texture &&other) noexcept -> Texture & {
+  swap(other);
+  return *this;
+};
+
+void Texture::swap(Texture &other) {
+  std::swap(this->texture_id_, other.texture_id_);
+}
+void Texture::bind() const { glBindTexture(GL_TEXTURE_2D, texture_id_); }
+
+void Texture::create(size_t width, size_t height, void *pixels) {
   // Create texture
   glGenTextures(1, &texture_id_);
   bind();
@@ -145,17 +163,5 @@ Texture(size_t width, size_t height, void *pixels) {
                   GL_LINEAR_MIPMAP_LINEAR);
   glGenerateMipmap(GL_TEXTURE_2D);
 }
-Texture::~Texture() { glDeleteTextures(1, &texture_id_); }
-
-Texture::Texture(Texture &&other) noexcept { swap(other); }
-auto Texture::operator=(Texture &&other) noexcept -> Texture & {
-  swap(other);
-  return *this;
-};
-
-void Texture::swap(Texture &other) {
-  std::swap(this->texture_id_, other.texture_id_);
-}
-void Texture::bind() const { glBindTexture(GL_TEXTURE_2D, texture_id_); }
 
 } // namespace gl

@@ -116,6 +116,8 @@ struct Texture {
   void bind() const;
 
 private:
+  void create(size_t width, size_t height, void *pixels);
+
   GLuint texture_id_ = 0;
 };
 

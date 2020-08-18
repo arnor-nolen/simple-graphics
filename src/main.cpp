@@ -74,8 +74,8 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Loading models
   resource_manager.load_model("./resources/AK-47.fbx");
   // resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
-  resource_manager.load_model(
-      "./resources/lowpoly_helicopter_triangulated.obj");
+  // resource_manager.load_model(
+  //     "./resources/lowpoly_helicopter_triangulated.obj");
 
   // Loading shaders
   std::vector<gl::Shader> shaders;
@@ -99,7 +99,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   glm::mat4 view_matrix =
       glm::lookAt(glm::vec3(12, 9, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   auto model_matrix1 =
-      glm::scale(glm::mat4(1.0F), glm::vec3(0.01F, 0.01F, 0.01F));
+      glm::scale(glm::mat4(1.0F), glm::vec3(10.0F, 10.0F, 10.0F));
   auto model_matrix2 = glm::translate(
       glm::scale(glm::mat4(1.0F), glm::vec3(0.001F, 0.001F, 0.001F)),
       glm::vec3(0, 5, 0));
@@ -107,7 +107,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   glm::mat4 mvp_matrix2 = projection_matrix * view_matrix * model_matrix2;
 
   auto &models = resource_manager.get_models();
-  models[1].set_mvp_matrix(mvp_matrix2);
+  // models[1].set_mvp_matrix(mvp_matrix2);
 
   // Game loop
   SDL_Event windowEvent;

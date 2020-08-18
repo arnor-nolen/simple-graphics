@@ -9,6 +9,5 @@ void parse_model(const std::vector<char> &data,
                  std::vector<gl::Vertex> &vertices, std::string &texture_path);
 void parse_model_fbx(const std::vector<char> &data,
                      std::vector<gl::Element> &elements,
-                     std::vector<gl::Vertex> &vertices,
-                     std::string &texture_path);
+                     std::vector<gl::Vertex> &vertices, gl::Texture &texture);
 } // namespace parser

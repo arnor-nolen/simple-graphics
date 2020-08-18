@@ -1,18 +1,17 @@
 #include "core/model.hpp"
 
 Model::Model(const std::vector<gl::Element> &elements,
-             const std::vector<gl::Vertex> &vertices,
-             const std::string &texture_path)
+             const std::vector<gl::Vertex> &vertices, gl::Texture &texture)
     : ebo_(GL_ELEMENT_ARRAY_BUFFER, elements), vbo_(GL_ARRAY_BUFFER, vertices),
-      texture_(texture_path) {}
+      texture_(std::move(texture)) {}
 
 Model::Model(const std::string &path) {
   auto file = load_file(path);
   auto elements = std::vector<gl::Element>();
   auto vertices = std::vector<gl::Vertex>();
-  std::string texture_path;
-  parser::parse_model_fbx(file, elements, vertices, texture_path);
-  auto model = Model(elements, vertices, texture_path);
+  auto texture = gl::Texture();
+  parser::parse_model_fbx(file, elements, vertices, texture);
+  auto model = Model(elements, vertices, texture);
   this->swap(model);
 }
 

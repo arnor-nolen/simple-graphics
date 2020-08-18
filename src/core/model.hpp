@@ -9,8 +9,7 @@ struct Model {
   Model() = default;
 
   Model(const std::vector<gl::Element> &elements,
-        const std::vector<gl::Vertex> &vertices,
-        const std::string &texture_path);
+        const std::vector<gl::Vertex> &vertices, gl::Texture &texture);
 
   explicit Model(const std::string &path);
 

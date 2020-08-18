@@ -37,13 +37,11 @@ void parse_model(const std::vector<char> &data,
     }
     elements.push_back(e);
   }
-  throw std::runtime_error("Exit!");
 }
 
 void parse_model_fbx(const std::vector<char> &data,
                      std::vector<gl::Element> &elements,
-                     std::vector<gl::Vertex> &vertices,
-                     std::string &texture_path) {
+                     std::vector<gl::Vertex> &vertices, gl::Texture &texture) {
   Timer timer("Parsing FBX file took ");
 
   Assimp::Importer importer;
@@ -55,6 +53,8 @@ void parse_model_fbx(const std::vector<char> &data,
     const std::string error = importer.GetErrorString();
     throw std::runtime_error(error);
   }
+
+  texture = gl::Texture("./resources/Textures/Ak-47_Albedo.png");
 
   for (size_t i = 0; i < scene->mNumMeshes; ++i) {
     const aiMesh *mesh = scene->mMeshes[i];
@@ -85,7 +85,6 @@ void parse_model_fbx(const std::vector<char> &data,
       vertices.push_back(std::move(v));
     }
   }
-
   std::cout << vertices.size() << '\n';
   std::cout << elements.size() << '\n';
   for (const auto &i : vertices) {
@@ -94,6 +93,6 @@ void parse_model_fbx(const std::vector<char> &data,
               << i.uv.x << ' ' << i.uv.y << '\n';
   }
 
-  throw std::runtime_error("Exit!");
+  // throw std::runtime_error("Exit!");
 }
 } // namespace parser
