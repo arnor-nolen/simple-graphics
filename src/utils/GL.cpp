@@ -1,5 +1,7 @@
 #include "utils/GL.hpp"
 
+#include <iostream>
+
 namespace gl {
 
 void enable(const std::vector<GLenum> &features) {

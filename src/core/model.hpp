@@ -1,17 +1,18 @@
 #pragma once
 
 #include "utils/GL.hpp"
-#include "utils/parsers/parsers.hpp"
 #include "utils/primitives.hpp"
 #include <GL/glew.h>
+#include <string_view>
 
 struct Model {
   Model() = default;
 
-  Model(const std::vector<gl::Element> &elements,
-        const std::vector<gl::Vertex> &vertices, gl::Texture &texture);
+  Model(std::vector<gl::Element> &elements, std::vector<gl::Vertex> &vertices,
+        gl::Texture &texture);
 
-  explicit Model(const std::string &path);
+  explicit Model(std::string_view path);
+  Model(std::string_view path, std::string_view texture_path);
 
   ~Model() = default;
 

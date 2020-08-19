@@ -22,7 +22,7 @@ void parse_model(const std::vector<char> &data,
 
   for (const auto &face : faces) {
     auto v = std::array<gl::Vertex, 3>();
-    for (int i = 0; i != 3; ++i) {
+    for (size_t i = 0; i != 3; ++i) {
       unsigned int vertex_id = face.vertices.at(i).vertex_id;
       unsigned int uv_id = face.vertices.at(i).uv_id;
 
@@ -35,8 +35,8 @@ void parse_model(const std::vector<char> &data,
     }
     vertices.insert(vertices.end(), v.begin(), v.end());
     auto e = gl::Element();
-    for (int i = 0; i != 3; ++i) {
-      e.vertices.at(i) = static_cast<unsigned int>(vertices.size() - i - 1);
+    for (size_t i = 0; i != 3; ++i) {
+      e.vertices.at(i) = vertices.size() - i - 1;
     }
     elements.push_back(e);
   }
@@ -44,8 +44,9 @@ void parse_model(const std::vector<char> &data,
 
 void parse_model_assimp(const std::vector<char> &data,
                         std::vector<gl::Element> &elements,
-                        std::vector<gl::Vertex> &vertices, gl::Texture &texture,
-                        const std::string_view file_type) {
+                        std::vector<gl::Vertex> &vertices,
+                        const std::string_view file_type, gl::Texture &texture,
+                        const std::string_view texture_path) {
   Timer timer("Parsing assimp file took ");
 
   Assimp::Importer importer;
@@ -57,7 +58,7 @@ void parse_model_assimp(const std::vector<char> &data,
     throw std::runtime_error(error);
   }
 
-  texture = gl::Texture("./resources/Textures/Ak-47_Albedo.png");
+  texture = gl::Texture(texture_path.data());
 
   for (size_t i = 0; i < scene->mNumMeshes; ++i) {
     const aiMesh *mesh = scene->mMeshes[i];
@@ -66,7 +67,7 @@ void parse_model_assimp(const std::vector<char> &data,
       const aiFace face = mesh->mFaces[j];
       auto e = gl::Element();
       for (size_t k = 0; k < face.mNumIndices; ++k) {
-        e.vertices[k] = face.mIndices[k];
+        e.vertices.at(k) = face.mIndices[k];
       }
       elements.push_back(e);
     }
@@ -74,7 +75,7 @@ void parse_model_assimp(const std::vector<char> &data,
     for (size_t j = 0; j < mesh->mNumVertices; ++j) {
       const auto point = mesh->mVertices[j];
       const auto tex = mesh->mTextureCoords[0][j];
-      const auto material = scene->mMaterials[mesh->mMaterialIndex];
+      const auto *material = scene->mMaterials[mesh->mMaterialIndex];
 
       aiColor3D color(0.F, 0.F, 0.F);
       if (AI_SUCCESS != material->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
@@ -85,17 +86,8 @@ void parse_model_assimp(const std::vector<char> &data,
                       {color.r, color.g, color.b},
                       {tex.x, tex.y}};
 
-      vertices.push_back(std::move(v));
+      vertices.push_back(v);
     }
   }
-  // std::cout << vertices.size() << '\n';
-  // std::cout << elements.size() << '\n';
-  // for (const auto &i : vertices) {
-  //   std::cout << i.coord.x << ' ' << i.coord.y << ' ' << i.coord.z << ' '
-  //             << i.color.r << ' ' << i.color.g << ' ' << i.color.b << ' '
-  //             << i.uv.x << ' ' << i.uv.y << '\n';
-  // }
-
-  // throw std::runtime_error("Exit!");
 }
 } // namespace parser

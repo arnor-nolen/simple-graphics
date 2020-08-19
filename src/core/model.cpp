@@ -1,18 +1,34 @@
 #include "core/model.hpp"
 
-Model::Model(const std::vector<gl::Element> &elements,
-             const std::vector<gl::Vertex> &vertices, gl::Texture &texture)
-    : ebo_(GL_ELEMENT_ARRAY_BUFFER, elements), vbo_(GL_ARRAY_BUFFER, vertices),
-      texture_(std::move(texture)) {}
+#include "utils/parsers/parsers.hpp"
+#include "utils/primitives.hpp"
 
-Model::Model(const std::string &path) {
+Model::Model(std::vector<gl::Element> &elements,
+             std::vector<gl::Vertex> &vertices, gl::Texture &texture)
+    : ebo_(GL_ELEMENT_ARRAY_BUFFER, std::move(elements)),
+      vbo_(GL_ARRAY_BUFFER, std::move(vertices)), texture_(std::move(texture)) {
+}
+
+Model::Model(const std::string_view path) {
   auto file = load_file(path);
   auto elements = std::vector<gl::Element>();
   auto vertices = std::vector<gl::Vertex>();
   gl::Texture texture;
-  parser::parse_model_assimp(file, elements, vertices, texture, "fbx");
-  ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, elements);
-  vbo_ = gl::Buffer<gl::Vertex>(GL_ARRAY_BUFFER, vertices);
+  parser::parse_model(file, elements, vertices, texture);
+  ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, std::move(elements));
+  vbo_ = gl::Buffer<gl::Vertex>(GL_ARRAY_BUFFER, std::move(vertices));
+  texture_ = gl::Texture(std::move(texture));
+}
+
+Model::Model(const std::string_view path, const std::string_view texture_path) {
+  auto file = load_file(path);
+  auto elements = std::vector<gl::Element>();
+  auto vertices = std::vector<gl::Vertex>();
+  gl::Texture texture;
+  parser::parse_model_assimp(file, elements, vertices, "fbx", texture,
+                             texture_path);
+  ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, std::move(elements));
+  vbo_ = gl::Buffer<gl::Vertex>(GL_ARRAY_BUFFER, std::move(vertices));
   texture_ = gl::Texture(std::move(texture));
 }
 

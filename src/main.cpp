@@ -3,8 +3,6 @@
 
 #include "utils/GL.hpp"
 #include "utils/SDL.hpp"
-#include "utils/flip_vertical.hpp"
-#include "utils/io.hpp"
 #include "utils/timer.hpp"
 #include <glm/gtx/transform.hpp>
 
@@ -72,10 +70,11 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
 
   auto resource_manager = ResourceManager();
   // Loading models
-  resource_manager.load_model("./resources/AK-47.fbx");
+  resource_manager.load_model("./resources/AK-47.fbx",
+                              "./resources/Textures/Ak-47_Albedo.png");
   // resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
-  // resource_manager.load_model(
-  //     "./resources/lowpoly_helicopter_triangulated.obj");
+  resource_manager.load_model(
+      "./resources/lowpoly_helicopter_triangulated.obj");
 
   // Loading shaders
   std::vector<gl::Shader> shaders;
@@ -93,21 +92,40 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // We don't need shaders anymore as the program is compiled
   shaders.clear();
 
+  // Setting up the demo scene
+  constexpr auto fov = glm::radians(45.0F);
+  constexpr float aspect_ratio = 4.0F / 3.0F;
+  constexpr float z_near = 0.1F;
+  constexpr float z_far = 100.0F;
+
+  constexpr auto camera_position = glm::vec3(12, 9, 9);
+  constexpr auto scene_center = glm::vec3(0);
+  constexpr auto up_direction = glm::vec3(0, 1, 0);
+
+  constexpr auto identity_matrix = glm::mat4(1.0F);
+  constexpr float model1_scale = 10.0F;
+  constexpr auto model1_scale_matrix =
+      glm::vec3(model1_scale, model1_scale, model1_scale);
+  constexpr float model2_scale = 0.001F;
+  constexpr auto model2_scale_matrix =
+      glm::vec3(model2_scale, model2_scale, model2_scale);
+
+  constexpr auto model2_offset = glm::vec3(0.0F, 4.0F, 0.0F);
+
   // Calculate MVP matrix
   glm::mat4 projection_matrix =
-      glm::perspective(glm::radians(45.0F), 4.0F / 3.0F, 0.1F, 100.0F);
+      glm::perspective(fov, aspect_ratio, z_near, z_far);
   glm::mat4 view_matrix =
-      glm::lookAt(glm::vec3(12, 9, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-  auto model_matrix1 =
-      glm::scale(glm::mat4(1.0F), glm::vec3(10.0F, 10.0F, 10.0F));
-  auto model_matrix2 = glm::translate(
-      glm::scale(glm::mat4(1.0F), glm::vec3(0.001F, 0.001F, 0.001F)),
-      glm::vec3(0, 5, 0));
-  glm::mat4 mvp_matrix1 = projection_matrix * view_matrix * model_matrix1;
-  glm::mat4 mvp_matrix2 = projection_matrix * view_matrix * model_matrix2;
+      glm::lookAt(camera_position, scene_center, up_direction);
+  auto model1_matrix = glm::scale(identity_matrix, model1_scale_matrix);
+  auto model2_matrix = glm::scale(identity_matrix, model2_scale_matrix);
+  glm::mat4 mvp_matrix1 = projection_matrix * view_matrix * model1_matrix;
+  glm::mat4 mvp_matrix2 = projection_matrix *
+                          glm::translate(view_matrix, model2_offset) *
+                          model2_matrix;
 
   auto &models = resource_manager.get_models();
-  // models[1].set_mvp_matrix(mvp_matrix2);
+  models[1].set_mvp_matrix(mvp_matrix2);
 
   // Game loop
   SDL_Event windowEvent;
@@ -130,11 +148,11 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
 
     constexpr float time_delta = 0.001F * 0.001F * 0.1F;
     constexpr float pi_rad = 180.0F;
+    constexpr auto axis = glm::vec3(0.0F, 1.0F, 0.0F);
 
     auto rotation_time = time.count() * time_delta;
     auto rotated_mvp1 =
-        glm::rotate(mvp_matrix1, rotation_time * glm::radians(pi_rad),
-                    glm::vec3(0.0F, 1.0F, 0.0F));
+        glm::rotate(mvp_matrix1, rotation_time * glm::radians(pi_rad), axis);
     models[0].set_mvp_matrix(rotated_mvp1);
 
     // Render all the models
