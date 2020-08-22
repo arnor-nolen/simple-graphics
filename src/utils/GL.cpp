@@ -155,8 +155,9 @@ void Texture::create(size_t width, size_t height, void *pixels) {
   glGenTextures(1, &texture_id_);
   bind();
   // Load image
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, pixels);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(width),
+               static_cast<GLsizei>(height), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixels);
   // Nice trilinear filtering with mipmaps
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

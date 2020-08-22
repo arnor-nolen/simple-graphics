@@ -36,7 +36,7 @@ void parse_model(const std::vector<char> &data,
     vertices.insert(vertices.end(), v.begin(), v.end());
     auto e = gl::Element();
     for (size_t i = 0; i != 3; ++i) {
-      e.vertices.at(i) = vertices.size() - i - 1;
+      e.vertices.at(i) = static_cast<unsigned int>(vertices.size() - i - 1);
     }
     elements.push_back(e);
   }
