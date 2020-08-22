@@ -71,10 +71,9 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   auto resource_manager = ResourceManager();
   // Loading models
   resource_manager.load_model("./resources/AK-47.fbx",
-                              "./resources/Textures/Ak-47_Albedo.png");
+                              "./resources/textures/Ak-47_Albedo.png");
   // resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
-  resource_manager.load_model(
-      "./resources/lowpoly_helicopter_triangulated.obj");
+  resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
 
   // Loading shaders
   std::vector<gl::Shader> shaders;

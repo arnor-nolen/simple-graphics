@@ -55,6 +55,14 @@
       "cStandard": "c11",
       "cppStandard": "c++17",
       "intelliSenseMode": "clang-x64"
+    },
+    {
+      "name": "Linux",
+      "includePath": [],
+      "defines": [],
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "clang-x64"
     }
   ],
   "version": 4

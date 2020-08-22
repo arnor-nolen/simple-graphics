@@ -24,9 +24,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/$<0:>)
 
-# Set platform-specific stuff
-string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-
+# Set compiler-specific stuff
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
   # Suppress compiler warnings:
@@ -37,30 +35,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # 1. external libraries are compiled without debug info.
   add_link_options(/IGNORE:4099)
 
-  if(BUILD_TYPE STREQUAL "DEBUG")
-    add_compile_options(/Od)
-  elseif(BUILD_TYPE STREQUAL "RELEASE")
-    # Strip out /RTC1 and /Zi for production builds
-    string(REGEX REPLACE "[/|-]RTC[^ ]*" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
-    string(REGEX REPLACE "[/|-]Zi[^ ]*" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
-    add_compile_options(/O2)
-  else()
-  endif()
-
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
   # -fvisibility=hidden for external libraries
   add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
 
-  if(BUILD_TYPE STREQUAL "DEBUG")
-    add_compile_options(-g -O0)
-  elseif(BUILD_TYPE STREQUAL "RELEASE")
-    add_compile_options(-O3)
-  else()
-  endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+  # -fvisibility=hidden for external libraries
+  add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -fvisibility=hidden)
 
 else()
-  message(FATAL_ERROR "Currently, only MSVC and AppleClang compilers are officially supported. You need to set compiler options manually by editing CMakeLists.txt")
+
+  message(WARNING "Unknown compiler, proceeding without additional compiler options")
+
 endif()
 
 # Set targets
@@ -73,10 +61,13 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 # Add src to the include path
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-#-------------------------------------------------------------
-# Generate c_cpp_properties.json for VSCode code highlighting
-#-------------------------------------------------------------
+#-------------------------------------------------------------------
+# Generate include paths for VSCode (CPP_TOOLS and clang-tidy)
+#-------------------------------------------------------------------
 if(GENERATE_INCLUDE_PATHS)
+  #-------------------------------------------------------------
+  # Generate c_cpp_properties.json for VSCode code highlighting
+  #-------------------------------------------------------------
   message(STATUS "Generating include paths for VSCode CPP extension and clang-tidy plugin...")
   set(VSCODE_CPP_TOOLS_FILE_LOCATION ".vscode/c_cpp_properties.json")
 
@@ -85,7 +76,7 @@ if(GENERATE_INCLUDE_PATHS)
   elseif(APPLE)
     set(CPP_TOOLS_CONFIG_NAME "Mac")
   else()
-    message(WARNING "VSCode CPP extension for Linux currently is not supported. You have to manually set include paths for ${VSCODE_CPP_TOOLS_FILE_LOCATION}!")
+    set(CPP_TOOLS_CONFIG_NAME "Linux")
   endif()
 
   file(READ ${VSCODE_CPP_TOOLS_FILE_LOCATION} VSCODE_CPP_TOOLS_FILE)
