@@ -78,7 +78,7 @@ void parse_model_assimp(const std::vector<char> &data,
       const auto *material = scene->mMaterials[mesh->mMaterialIndex];
 
       aiColor3D color(0.F, 0.F, 0.F);
-      if (AI_SUCCESS != material->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
+      if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) != AI_SUCCESS) {
         throw std::runtime_error(
             "Error accesssing diffuse color of a material!");
       }

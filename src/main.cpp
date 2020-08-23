@@ -16,21 +16,10 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
 
   constexpr int stencil_size = 8;
 
-  // TODO: CHANGE TO VARIADIC ARGUMENTS!
-  sdl2::gl_setAttributes(
-      {{SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE},
-       {SDL_GL_CONTEXT_MAJOR_VERSION, opengl_version.major},
-       {SDL_GL_CONTEXT_MINOR_VERSION, opengl_version.minor},
-       {SDL_GL_STENCIL_SIZE, stencil_size}});
-
   constexpr struct {
     int buffers;
     int samples;
   } multisample = {1, 4};
-
-  // Enable 4x Antialiasing
-  sdl2::gl_setAttributes({{SDL_GL_MULTISAMPLEBUFFERS, multisample.buffers},
-                          {SDL_GL_MULTISAMPLESAMPLES, multisample.samples}});
 
   constexpr struct {
     int x;
@@ -41,6 +30,17 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     int w;
     int h;
   } window_resolution = {800, 600};
+
+  // Set up OpenGL attributes
+  sdl2::gl_setAttributes(
+      {{SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE},
+       {SDL_GL_CONTEXT_MAJOR_VERSION, opengl_version.major},
+       {SDL_GL_CONTEXT_MINOR_VERSION, opengl_version.minor},
+       {SDL_GL_STENCIL_SIZE, stencil_size}});
+
+  // Enable 4x Antialiasing
+  sdl2::gl_setAttributes({{SDL_GL_MULTISAMPLEBUFFERS, multisample.buffers},
+                          {SDL_GL_MULTISAMPLESAMPLES, multisample.samples}});
 
   // Create window
   auto window = sdl2::unique_ptr<SDL_Window>(SDL_CreateWindow(
@@ -59,20 +59,19 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   };
 
   // Enable depth test and antialiasing
-  // TODO: CHANGE TO VARIADIC ARGUMENTS!
   gl::enable({GL_DEPTH_TEST, GL_MULTISAMPLE});
   glDepthFunc(GL_LESS);
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // Create Vertex Array Object
   // Single VAO for entire application
   auto vao = gl::VertexArrayObject();
 
+  // Create resource manager
   auto resource_manager = ResourceManager();
+
   // Loading models
   resource_manager.load_model("./resources/AK-47.fbx",
                               "./resources/textures/Ak-47_Albedo.png");
-  // resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
   resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
 
   // Loading shaders
@@ -80,8 +79,8 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
   shaders.emplace_back(gl::Shader(GL_FRAGMENT_SHADER));
 
-  shaders[0].load("./src/shaders/shader.vert");
-  shaders[1].load("./src/shaders/shader.frag");
+  shaders.at(0).load("./src/shaders/shader.vert");
+  shaders.at(1).load("./src/shaders/shader.frag");
 
   // Link the vertex and fragment shader into a shader program
   auto &program = resource_manager.get_program_ptr();
@@ -124,23 +123,25 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
                           model2_matrix;
 
   auto &models = resource_manager.get_models();
-  models[1].set_mvp_matrix(mvp_matrix2);
+  models.at(1).set_mvp_matrix(mvp_matrix2);
 
   // Game loop
   SDL_Event windowEvent;
   auto t_start = std::chrono::high_resolution_clock::now();
   while (true) {
-    // Timer timer;
+    // Check for window events
     if (SDL_PollEvent(&windowEvent) != 0) {
       if (windowEvent.type == SDL_QUIT) {
         break;
       }
     }
+
     // Clear the screen to black
     glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
     glClear(static_cast<unsigned int>(GL_COLOR_BUFFER_BIT) |
             static_cast<unsigned int>(GL_DEPTH_BUFFER_BIT));
 
+    // Calculate new model mvp matrices
     auto t_now = std::chrono::high_resolution_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
@@ -152,11 +153,12 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     auto rotation_time = time.count() * time_delta;
     auto rotated_mvp1 =
         glm::rotate(mvp_matrix1, rotation_time * glm::radians(pi_rad), axis);
-    models[0].set_mvp_matrix(rotated_mvp1);
+    models.at(0).set_mvp_matrix(rotated_mvp1);
 
     // Render all the models
     resource_manager.render_all();
 
+    // Swap window
     SDL_GL_SwapWindow(window.get());
   }
 
