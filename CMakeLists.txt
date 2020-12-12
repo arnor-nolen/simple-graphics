@@ -4,7 +4,7 @@ project(simple-graphics)
 # Downloading cmake-conan script 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-  file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
+  file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/a6411d858f96e3d1adf9a7cb7587c40cecacfbdb/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
