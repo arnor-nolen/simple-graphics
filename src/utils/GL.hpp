@@ -22,7 +22,7 @@ struct Shader {
 
   void swap(Shader &other);
 
-  void load(const std::string &path);
+  void load(std::string_view path);
 
   [[nodiscard]] auto get() const -> const GLuint &;
 

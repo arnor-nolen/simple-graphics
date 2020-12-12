@@ -5,10 +5,12 @@
 #include "utils/SDL.hpp"
 #include "utils/timer.hpp"
 #include <glm/gtx/transform.hpp>
+#include <string_view>
 
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
 
+  // Setting up constants
   constexpr struct {
     int major;
     int minor;
@@ -75,20 +77,8 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
 
   // Loading shaders
-  std::vector<gl::Shader> shaders;
-  shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
-  shaders.emplace_back(gl::Shader(GL_FRAGMENT_SHADER));
-
-  shaders.at(0).load("./src/shaders/shader.vert");
-  shaders.at(1).load("./src/shaders/shader.frag");
-
-  // Link the vertex and fragment shader into a shader program
-  auto &program = resource_manager.get_program_ptr();
-  program.compile(shaders);
-  program.use();
-
-  // We don't need shaders anymore as the program is compiled
-  shaders.clear();
+  resource_manager.load_shaders("./src/shaders/shader.vert",
+                                "./src/shaders/shader.frag");
 
   // Setting up the demo scene
   constexpr auto fov = glm::radians(45.0F);

@@ -14,11 +14,11 @@ struct ResourceManager {
       -> ResourceManager & = delete;
 
   template <typename... Args> void load_model(Args &&... args);
+  void load_shaders(std::string_view, std::string_view);
 
   void render_all();
 
   auto get_models() -> std::vector<Model> &;
-  auto get_program_ptr() -> gl::Program &;
 
 private:
   std::vector<Model> models_;
