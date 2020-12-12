@@ -71,14 +71,12 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Create resource manager
   auto resource_manager = ResourceManager();
 
-  // Loading models
+  // Loading resources
+  resource_manager.load_shaders("./src/shaders/shader.vert",
+                                "./src/shaders/shader.frag");
   resource_manager.load_model("./resources/AK-47.fbx",
                               "./resources/textures/Ak-47_Albedo.png");
   resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
-
-  // Loading shaders
-  resource_manager.load_shaders("./src/shaders/shader.vert",
-                                "./src/shaders/shader.frag");
 
   // Setting up the demo scene
   constexpr auto fov = glm::radians(45.0F);
