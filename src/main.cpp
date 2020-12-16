@@ -26,8 +26,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Create window
   auto window_flags = static_cast<unsigned int>(SDL_WINDOW_OPENGL) |
                       static_cast<unsigned int>(SDL_WINDOW_RESIZABLE);
-  auto fullscreen = static_cast<unsigned int>(0);
-  window_flags |= fullscreen;
+  window_flags |= settings::fullscreen;
   auto window = sdl2::unique_ptr<SDL_Window>(SDL_CreateWindow(
       "Simple graphics engine", settings::window_position.x,
       settings::window_position.y, settings::window_resolution.w,
@@ -110,7 +109,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           // Handle window resize
           glViewport(0, 0, e.window.data1, e.window.data2);
-          if (!static_cast<bool>(fullscreen)) {
+          if (!static_cast<bool>(settings::fullscreen)) {
             settings::window_resolution = {e.window.data1, e.window.data2};
           }
           aspect_ratio = e.window.data1 / static_cast<double>(e.window.data2);
@@ -122,28 +121,21 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
           if (static_cast<bool>(e.key.keysym.mod &
                                 (static_cast<unsigned int>(KMOD_LALT) |
                                  static_cast<unsigned int>(KMOD_RALT)))) {
-            // Handle fullscreen toggle
-            struct {
-              int w;
-              int h;
-            } resolution = {settings::window_resolution.w,
-                            settings::window_resolution.h};
-            switch (fullscreen) {
+            // Handle settings::fullscreen toggle
+            switch (settings::fullscreen) {
             case 0:
-              fullscreen = SDL_WINDOW_FULLSCREEN_DESKTOP;
+              settings::fullscreen = SDL_WINDOW_FULLSCREEN;
               SDL_DisplayMode dm;
               SDL_GetDesktopDisplayMode(0, &dm);
-              resolution = {dm.w, dm.h};
-              SDL_SetWindowSize(window.get(), resolution.w, resolution.h);
-              SDL_SetWindowFullscreen(window.get(), fullscreen);
+              SDL_SetWindowSize(window.get(), dm.w, dm.h);
+              SDL_SetWindowFullscreen(window.get(), settings::fullscreen);
               break;
             case SDL_WINDOW_FULLSCREEN:
             case SDL_WINDOW_FULLSCREEN_DESKTOP:
-              fullscreen = 0;
-              resolution = {settings::window_resolution.w,
-                            settings::window_resolution.h};
-              SDL_SetWindowFullscreen(window.get(), fullscreen);
-              SDL_SetWindowSize(window.get(), resolution.w, resolution.h);
+              settings::fullscreen = 0;
+              SDL_SetWindowFullscreen(window.get(), settings::fullscreen);
+              SDL_SetWindowSize(window.get(), settings::window_resolution.w,
+                                settings::window_resolution.h);
               break;
             default:
               break;

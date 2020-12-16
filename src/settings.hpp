@@ -23,4 +23,5 @@ struct {
   int h;
 } window_resolution = {800, 600};
 
+auto fullscreen = static_cast<unsigned int>(0);
 } // namespace settings
