@@ -18,10 +18,10 @@ constexpr struct {
   int y;
 } window_position = {100, 100};
 
-struct {
+static struct {
   int w;
   int h;
 } window_resolution = {800, 600};
 
-auto fullscreen = static_cast<unsigned int>(0);
+static auto fullscreen = static_cast<unsigned int>(0);
 } // namespace settings

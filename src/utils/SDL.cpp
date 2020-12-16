@@ -23,6 +23,8 @@ SDL_Context::SDL_Context(const sdl2::unique_ptr<SDL_Window> &w)
     : context_(SDL_GL_CreateContext(w.get())) {}
 SDL_Context::~SDL_Context() { SDL_GL_DeleteContext(context_); }
 
+auto SDL_Context::get() const -> const SDL_GLContext & { return context_; };
+
 SDL_image::SDL_image(int flags) {
   // Check if IMG_Init returns the flags we requested
   if ((static_cast<unsigned int>(IMG_Init(flags)) &

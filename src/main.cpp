@@ -4,6 +4,7 @@
 #include "settings.hpp"
 #include "utils/GL.hpp"
 #include "utils/SDL.hpp"
+#include "utils/imgui.hpp"
 #include "utils/timer.hpp"
 #include <glm/gtx/transform.hpp>
 #include <string_view>
@@ -46,6 +47,9 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Enable depth test and antialiasing
   gl::enable({GL_DEPTH_TEST, GL_MULTISAMPLE});
   glDepthFunc(GL_LESS);
+
+  // Initialize ImGui
+  auto imgui = imgui::Imgui(window, context);
 
   // Create Vertex Array Object
   // Single VAO for entire application
@@ -99,6 +103,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   while (!should_quit) {
     // Check for window events
     if (SDL_PollEvent(&e) != 0) {
+      ImGui_ImplSDL2_ProcessEvent(&e);
       switch (e.type) {
       case SDL_QUIT:
         // Handle app quit
@@ -121,7 +126,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
           if (static_cast<bool>(e.key.keysym.mod &
                                 (static_cast<unsigned int>(KMOD_LALT) |
                                  static_cast<unsigned int>(KMOD_RALT)))) {
-            // Handle settings::fullscreen toggle
+            // Handle fullscreen toggle
             switch (settings::fullscreen) {
             case 0:
               settings::fullscreen = SDL_WINDOW_FULLSCREEN;
@@ -177,10 +182,18 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     // Render all the models
     resource_manager.render_all();
 
+    // Start the Dear ImGui frame
+    imgui.create_frame(window);
+
+    // Imgui Code
+    ImGui::ShowDemoWindow();
+
+    // Render ImGui
+    imgui.render();
+
     // Swap window
     SDL_GL_SwapWindow(window.get());
   }
-
   return 0;
 } catch (const std::exception &e) {
   std::cerr << e.what() << '\n';

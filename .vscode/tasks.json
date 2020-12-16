@@ -31,6 +31,19 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "type": "shell",
+      "label": "generate_include_paths",
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "command": "cmake",
+      "args": [
+        "..",
+        "-DCMAKE_BUILD_TYPE=${config:build_type}",
+        "-DGENERATE_INCLUDE_PATHS=ON"
+      ]
     }
   ],
   "version": "2.0.0"

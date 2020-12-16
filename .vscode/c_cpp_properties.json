@@ -2,27 +2,7 @@
   "configurations": [
     {
       "name": "Win32",
-      "includePath": [
-        "${workspaceFolder}/src/**",
-        "C:/Users/andre/.conan/data/sdl2_image/2.0.5/bincrafters/stable/package/8982fd9beb2facecc7bf2dbf286837c89f6638b6/include",
-        "C:/Users/andre/.conan/data/sdl2_image/2.0.5/bincrafters/stable/package/8982fd9beb2facecc7bf2dbf286837c89f6638b6/include/SDL2",
-        "C:/Users/andre/.conan/data/glew/2.1.0/bincrafters/stable/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
-        "C:/Users/andre/.conan/data/glm/0.9.9.8/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include",
-        "C:/.conan/4bb9e7/1/include",
-        "C:/Users/andre/.conan/data/assimp/5.0.1/_/_/package/4d3a656045a88c8b40b1c0209e12346d8f8592fd/include",
-        "C:/Users/andre/.conan/data/sdl2/2.0.12/bincrafters/stable/package/338cb52e3d13edeeec5934e0f9a1cc393ac32341/include",
-        "C:/Users/andre/.conan/data/sdl2/2.0.12/bincrafters/stable/package/338cb52e3d13edeeec5934e0f9a1cc393ac32341/include/SDL2",
-        "C:/Users/andre/.conan/data/libtiff/4.0.9/_/_/package/92f54ec79996b811cc6d0246136e850186e336f4/include",
-        "C:/Users/andre/.conan/data/libpng/1.6.37/_/_/package/6acf24cd4adf2df742e006cc0e5f0329e3b6e60b/include",
-        "C:/Users/andre/.conan/data/libwebp/1.0.3/_/_/package/092f77d3b4b4678d81fbffc1fccc9642b870175e/include",
-        "C:/Users/andre/.conan/data/bzip2/1.0.8/_/_/package/589a23dff5fdb23a7fb851223eb766480ead0a9a/include",
-        "C:/Users/andre/.conan/data/irrxml/1.2/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
-        "C:/Users/andre/.conan/data/libiconv/1.16/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
-        "C:/Users/andre/.conan/data/zlib/1.2.11/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
-        "C:/Users/andre/.conan/data/xz_utils/5.2.4/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
-        "C:/Users/andre/.conan/data/libjpeg/9c/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include",
-        "C:/Users/andre/.conan/data/jbig/20160605/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include"
-      ],
+      "includePath": ["${workspaceFolder}/src/**","C:/Users/andre/.conan/data/sdl2_image/2.0.5/bincrafters/stable/package/8982fd9beb2facecc7bf2dbf286837c89f6638b6/include","C:/Users/andre/.conan/data/sdl2_image/2.0.5/bincrafters/stable/package/8982fd9beb2facecc7bf2dbf286837c89f6638b6/include/SDL2","C:/Users/andre/.conan/data/glew/2.1.0/bincrafters/stable/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/glm/0.9.9.8/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include","C:/.conan/4bb9e7/1/include","C:/Users/andre/.conan/data/assimp/5.0.1/_/_/package/4d3a656045a88c8b40b1c0209e12346d8f8592fd/include","C:/Users/andre/.conan/data/imgui/1.79/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/sdl2/2.0.12/bincrafters/stable/package/338cb52e3d13edeeec5934e0f9a1cc393ac32341/include","C:/Users/andre/.conan/data/sdl2/2.0.12/bincrafters/stable/package/338cb52e3d13edeeec5934e0f9a1cc393ac32341/include/SDL2","C:/Users/andre/.conan/data/libtiff/4.0.9/_/_/package/92f54ec79996b811cc6d0246136e850186e336f4/include","C:/Users/andre/.conan/data/libpng/1.6.37/_/_/package/6acf24cd4adf2df742e006cc0e5f0329e3b6e60b/include","C:/Users/andre/.conan/data/libwebp/1.0.3/_/_/package/092f77d3b4b4678d81fbffc1fccc9642b870175e/include","C:/Users/andre/.conan/data/bzip2/1.0.8/_/_/package/589a23dff5fdb23a7fb851223eb766480ead0a9a/include","C:/Users/andre/.conan/data/irrxml/1.2/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/libiconv/1.16/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/zlib/1.2.11/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/xz_utils/5.2.4/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/libjpeg/9c/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include","C:/Users/andre/.conan/data/jbig/20160605/_/_/package/d057732059ea44a47760900cb5e4855d2bea8714/include"],
       "defines": [],
       "cStandard": "c11",
       "cppStandard": "c++17",

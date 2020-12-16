@@ -41,6 +41,8 @@ struct SDL_Context {
   auto operator=(const SDL_Context &) -> SDL_Context & = delete;
   auto operator=(SDL_Context &&other) noexcept -> SDL_Context & = delete;
 
+  [[nodiscard]] auto get() const -> const SDL_GLContext &;
+
 private:
   SDL_GLContext context_;
 };
