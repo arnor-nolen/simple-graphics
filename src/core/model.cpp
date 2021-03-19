@@ -2,6 +2,7 @@
 
 #include "utils/parsers/parsers.hpp"
 #include "utils/primitives.hpp"
+#include <glm/gtx/transform.hpp>
 
 Model::Model(std::vector<gl::Element> &elements,
              std::vector<gl::Vertex> &vertices, gl::Texture &texture)
@@ -9,24 +10,24 @@ Model::Model(std::vector<gl::Element> &elements,
       vbo_(GL_ARRAY_BUFFER, std::move(vertices)), texture_(std::move(texture)) {
 }
 
-Model::Model(const std::string_view path) {
+Model::Model(loader_enum loader, const std::string_view path,
+             const std::string_view texture_path) {
   auto file = load_file(path);
+  gl::Texture texture;
   auto elements = std::vector<gl::Element>();
   auto vertices = std::vector<gl::Vertex>();
-  gl::Texture texture;
-  parser::parse_model(file, elements, vertices, texture);
-  ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, std::move(elements));
-  vbo_ = gl::Buffer<gl::Vertex>(GL_ARRAY_BUFFER, std::move(vertices));
-  texture_ = gl::Texture(std::move(texture));
-}
 
-Model::Model(const std::string_view path, const std::string_view texture_path) {
-  auto file = load_file(path);
-  auto elements = std::vector<gl::Element>();
-  auto vertices = std::vector<gl::Vertex>();
-  gl::Texture texture;
-  parser::parse_model_assimp(file, elements, vertices, "fbx", texture,
-                             texture_path);
+  switch (loader) {
+  case LOADER_OBJ:
+    parser::parse_model(file, elements, vertices, texture);
+    break;
+  case LOADER_ASSIMP:
+    parser::parse_model_assimp(file, elements, vertices, "fbx", texture,
+                               texture_path);
+    break;
+  default:
+    break;
+  }
   ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, std::move(elements));
   vbo_ = gl::Buffer<gl::Vertex>(GL_ARRAY_BUFFER, std::move(vertices));
   texture_ = gl::Texture(std::move(texture));
@@ -43,6 +44,9 @@ void Model::swap(Model &other) {
   this->vbo_.swap(other.vbo_);
   std::swap(this->mvp_matrix_, other.mvp_matrix_);
   std::swap(this->texture_, other.texture_);
+  std::swap(this->scale_, other.scale_);
+  std::swap(this->offset_, other.offset_);
+  std::swap(this->settings, other.settings);
 }
 
 void Model::render(const GLuint &matrix_uniform) {
@@ -90,3 +94,26 @@ void Model::set_layout() {
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       reinterpret_cast<void *>(offset_uv * sizeof(float)));
 }
+
+void Model::set_offset(const glm::dvec3 &offset) {
+  settings.offset = {offset.x, offset.y, offset.z};
+  offset_ = offset;
+}
+auto Model::get_offset() -> const glm::dvec3 & { return offset_; }
+void Model::set_scale(const glm::dvec3 &scale) {
+  settings.scale = {scale.x, scale.y, scale.z};
+  scale_ = scale;
+}
+auto Model::get_scale() -> const glm::dvec3 & { return scale_; }
+
+void Model::calculate_mvp_matrix(const glm::dmat4 &projection_matrix,
+                                 const glm::dmat4 &view_matrix) {
+  constexpr auto identity_matrix = glm::dmat4(1.0);
+  auto model_matrix = glm::scale(identity_matrix, scale_);
+  mvp_matrix_ =
+      projection_matrix * glm::translate(view_matrix, offset_) * model_matrix;
+}
+
+void Model::rotate(double angle, const glm::dvec3 &axis) {
+  mvp_matrix_ = glm::rotate(glm::dmat4(mvp_matrix_), angle, axis);
+};

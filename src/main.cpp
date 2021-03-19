@@ -61,9 +61,17 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Loading resources
   resource_manager.load_shaders("./src/shaders/shader.vert",
                                 "./src/shaders/shader.frag");
-  resource_manager.load_model("./resources/AK-47.fbx",
-                              "./resources/textures/Ak-47_Albedo.png");
-  resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
+  auto &model1 =
+      resource_manager.load_model(LOADER_ASSIMP, "./resources/AK-47.fbx",
+                                  "./resources/textures/Ak-47_Albedo.png");
+  // resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
+
+  auto &models = resource_manager.get_models();
+
+  constexpr double model1_scale = 10.0;
+  model1.set_scale(glm::dvec3(model1_scale, model1_scale, model1_scale));
+  model1.set_offset(glm::dvec3(0.0, 0.0, 0.0));
+  model1.settings.name = "AK-47";
 
   // Setting up the demo scene
   constexpr auto fov = glm::radians(45.0);
@@ -75,22 +83,10 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   constexpr auto up_direction = glm::dvec3(0, 1, 0);
 
   constexpr auto identity_matrix = glm::dmat4(1.0);
-  constexpr double model1_scale = 10.0;
-  constexpr auto model1_scale_matrix =
-      glm::dvec3(model1_scale, model1_scale, model1_scale);
-  constexpr double model2_scale = 0.001;
-  constexpr auto model2_scale_matrix =
-      glm::dvec3(model2_scale, model2_scale, model2_scale);
 
-  constexpr auto model2_offset = glm::dvec3(0.0, 4.0, 0.0);
-
-  // Calculate MVP matrix
+  // Calculate View matrix
   glm::dmat4 view_matrix =
       glm::lookAt(camera_position, scene_center, up_direction);
-  auto model1_matrix = glm::scale(identity_matrix, model1_scale_matrix);
-  auto model2_matrix = glm::scale(identity_matrix, model2_scale_matrix);
-
-  auto &models = resource_manager.get_models();
 
   auto aspect_ratio = settings::window_resolution.w /
                       static_cast<double>(settings::window_resolution.h);
@@ -99,6 +95,14 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   SDL_Event e;
   bool should_quit = false;
   auto t_start = std::chrono::high_resolution_clock::now();
+
+  std::array<char, settings::file_str_size> file_str{};
+  std::array<char, settings::file_str_size> albedo_str{};
+
+  std::array<char, settings::file_str_size> model_name{};
+
+  loader_enum loader = LOADER_OBJ;
+  bool preserve_scale_ratio = true;
 
   while (!should_quit) {
     // Check for window events
@@ -157,14 +161,22 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     glClear(static_cast<unsigned int>(GL_COLOR_BUFFER_BIT) |
             static_cast<unsigned int>(GL_DEPTH_BUFFER_BIT));
 
-    // Calculate new model mvp matrices
+    // Delete models marked for deletion using erase-remove idiom
+    models.erase(
+        std::remove_if(models.begin(), models.end(),
+                       [](const Model &m) { return m.settings.delete_me; }),
+        models.end());
+
+    // Calculate new projection matrix to match aspect ratio
     glm::dmat4 projection_matrix =
         glm::perspective(fov, aspect_ratio, z_near, z_far);
-    glm::dmat4 mvp_matrix1 = projection_matrix * view_matrix * model1_matrix;
-    glm::dmat4 mvp_matrix2 = projection_matrix *
-                             glm::translate(view_matrix, model2_offset) *
-                             model2_matrix;
 
+    // Calculate new model mvp matrices
+    for (auto &&model : models) {
+      model.calculate_mvp_matrix(projection_matrix, view_matrix);
+    }
+
+    // Clock to rotate models
     auto t_now = std::chrono::high_resolution_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
@@ -174,10 +186,12 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     constexpr auto axis = glm::dvec3(0.0, 1.0, 0.0);
 
     auto rotation_time = time.count() * time_delta;
-    auto rotated_mvp1 =
-        glm::rotate(mvp_matrix1, rotation_time * glm::radians(pi_rad), axis);
-    models.at(0).set_mvp_matrix(rotated_mvp1);
-    models.at(1).set_mvp_matrix(mvp_matrix2);
+
+    for (auto &&model : models) {
+      if (model.settings.is_rotating) {
+        model.rotate(rotation_time * glm::radians(pi_rad), axis);
+      }
+    }
 
     // Render all the models
     resource_manager.render_all();
@@ -185,8 +199,93 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     // Start the Dear ImGui frame
     imgui.create_frame(window);
 
-    // Imgui Code
-    ImGui::ShowDemoWindow();
+    // Open model window
+    ImGui::Begin("Open model");
+
+    ImGui::InputTextWithHint("Model name", "Enter unique model name...",
+                             model_name.data(), model_name.size());
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+    ImGui::Text("Choose a loader");
+
+    if (ImGui::RadioButton("OBJ loader", loader == LOADER_OBJ)) {
+      loader = LOADER_OBJ;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Assimp loader (fbx only)",
+                           loader == LOADER_ASSIMP)) {
+      loader = LOADER_ASSIMP;
+    }
+
+    ImGui::InputTextWithHint("Model location", "Enter file location...",
+                             file_str.data(), file_str.size());
+    if (loader == LOADER_ASSIMP) {
+      ImGui::InputTextWithHint("Albedo map location", "Enter file location...",
+                               albedo_str.data(), albedo_str.size());
+    }
+
+    if (ImGui::Button("Open")) {
+      auto &model = resource_manager.load_model(loader, file_str.data(),
+                                                albedo_str.data());
+      model.settings.name = std::string(model_name.data());
+    }
+
+    ImGui::End();
+
+    // Models view
+    ImGui::Begin("Models");
+    for (auto &&model : models) {
+      auto &scale = model.settings.scale;
+      auto &offset = model.settings.offset;
+      auto &name = model.settings.name;
+      auto &is_open = model.settings.is_open;
+      auto &is_rotating = model.settings.is_rotating;
+
+      ImGui::PushID(&model);
+      ImGui::SetNextItemOpen(is_open);
+      is_open =
+          ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+
+      if (is_open) {
+        constexpr double MIN_SCALE = 0.001;
+        constexpr double MAX_SCALE = 1000.0;
+        if (preserve_scale_ratio) {
+          if (ImGui::SliderScalar("Scale", ImGuiDataType_Double, scale.data(),
+                                  &MIN_SCALE, &MAX_SCALE, "%.4f",
+                                  ImGuiSliderFlags_Logarithmic)) {
+            scale[1] = scale[0];
+            scale[2] = scale[0];
+            model.set_scale(glm::dvec3(scale[0], scale[1], scale[2]));
+          }
+        } else {
+          if (ImGui::SliderScalarN("Scale", ImGuiDataType_Double, scale.data(),
+                                   3, &MIN_SCALE, &MAX_SCALE, "%.4f",
+                                   ImGuiSliderFlags_Logarithmic)) {
+            model.set_scale(glm::dvec3(scale[0], scale[1], scale[2]));
+          }
+        }
+
+        if (ImGui::Checkbox("Preserve scale ratio", &preserve_scale_ratio)) {
+          scale[1] = scale[0];
+          scale[2] = scale[0];
+          model.set_scale(glm::dvec3(scale[0], scale[1], scale[2]));
+        }
+
+        constexpr double MIN_OFFSET = -10.0;
+        constexpr double MAX_OFFSET = 10.0;
+        if (ImGui::SliderScalarN("Offset", ImGuiDataType_Double, offset.data(),
+                                 3, &MIN_OFFSET, &MAX_OFFSET, "%.4f")) {
+          model.set_offset(glm::dvec3(offset[0], offset[1], offset[2]));
+        }
+        ImGui::Checkbox("Rotate", &is_rotating);
+        if (ImGui::Button("Delete")) {
+          model.settings.delete_me = true;
+        }
+        ImGui::TreePop();
+      }
+      ImGui::PopID();
+    }
+    ImGui::End();
 
     // Render ImGui
     imgui.render();

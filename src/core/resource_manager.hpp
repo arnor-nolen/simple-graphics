@@ -13,7 +13,7 @@ struct ResourceManager {
   auto operator=(ResourceManager &&other) noexcept
       -> ResourceManager & = delete;
 
-  template <typename... Args> void load_model(Args &&... args);
+  template <typename... Args> auto load_model(Args &&... args) -> Model &;
   void load_shaders(std::string_view, std::string_view);
 
   void render_all();

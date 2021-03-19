@@ -2,6 +2,7 @@
 
 #include "core/resource_manager.hpp"
 
-template <typename... Args> void ResourceManager::load_model(Args &&... args) {
-  models_.emplace_back(args...);
+template <typename... Args>
+auto ResourceManager::load_model(Args &&... args) -> Model & {
+  return models_.emplace_back(args...);
 }

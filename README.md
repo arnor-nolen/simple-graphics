@@ -5,13 +5,13 @@ Simple graphics engine using **SDL2** and **OpenGL**. Allows you to load 3D mode
 Currently has two ways to load models:
 
 - Using my custom loader for `obj` and `mtl` files;
-- Using `Assimp` to load `fbx` and other formats.
+- Using `Assimp` to load `fbx` (other formats will be added in future).
 
-Here's a screenshot of a demo scene, that contains 2 models: city model is loaded through `obj` and `mtl` files, the AK-47 is loaded through `fbx` file.
+Here's a screenshot of a demo scene, that contains 2 models: city model that is loaded from `obj` and `mtl` files and AK-47 that is loaded from `fbx` file and albedo (diffuse) map.
 
 ![Demo scene](./demo_screenshot.png)
 
-The `Assimp` library is quite slow, especially when loading `obj` files. So I wrote my own loader that parses `obj` and `mtl` files using `Boost::Spirit::X3` parsing library. For the demo scene, this changed the city model loading time from `~800ms` to `~13ms` in `RELEASE` mode. In future, I plan to add `fbx` loader, so I can get rid of `Assimp` entirely.
+The `Assimp` library is quite slow, especially when loading `obj` files. So I wrote my own loader that parses `obj` and `mtl` files using `Boost::Spirit::X3` parsing library. For the demo scene, this changed the city model loading time from `~800ms` to `~13ms` in `RELEASE` mode. In future, I plan to add custom `fbx` loader too, so I can get rid of `Assimp` entirely.
 
 ## Dependencies
 
