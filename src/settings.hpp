@@ -21,12 +21,15 @@ constexpr struct {
 constexpr int DEFAULT_WINDOW_WIDTH = 1024;
 constexpr int DEFAULT_WINDOW_HEIGHT = 768;
 
-static struct {
+struct Resolution {
   int w;
   int h;
-} window_resolution = {DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT};
+};
+static Resolution window_resolution = {DEFAULT_WINDOW_WIDTH,
+                                       DEFAULT_WINDOW_HEIGHT};
 
-static auto fullscreen = static_cast<unsigned int>(0);
+static unsigned int fullscreen = 0;
+static Resolution fullscreen_resolution;
 
 constexpr size_t file_str_size = 50;
 

@@ -41,7 +41,7 @@ struct Model {
     std::array<double, 3> scale = {1.0, 1.0, 1.0};
     std::array<double, 3> offset = {0.0, 0.0, 0.0};
     std::string name;
-    bool is_open = false;
+    bool is_open = true;
     bool is_rotating = false;
     bool delete_me = false;
   };

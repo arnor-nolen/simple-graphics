@@ -9,6 +9,28 @@
 #include <glm/gtx/transform.hpp>
 #include <string_view>
 
+void toggle_fullscreen(const sdl2::unique_ptr<SDL_Window> &window) {
+  switch (settings::fullscreen) {
+  case 0:
+    settings::fullscreen = SDL_WINDOW_FULLSCREEN;
+    SDL_DisplayMode dm;
+    SDL_GetDesktopDisplayMode(0, &dm);
+    settings::fullscreen_resolution = {dm.w, dm.h};
+    SDL_SetWindowSize(window.get(), dm.w, dm.h);
+    SDL_SetWindowFullscreen(window.get(), settings::fullscreen);
+    break;
+  case SDL_WINDOW_FULLSCREEN:
+  case SDL_WINDOW_FULLSCREEN_DESKTOP:
+    settings::fullscreen = 0;
+    SDL_SetWindowFullscreen(window.get(), settings::fullscreen);
+    SDL_SetWindowSize(window.get(), settings::window_resolution.w,
+                      settings::window_resolution.h);
+    break;
+  default:
+    break;
+  }
+}
+
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   auto sdl = sdl2::SDL(SDL_INIT_VIDEO);
 
@@ -104,6 +126,18 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   loader_enum loader = LOADER_OBJ;
   bool preserve_scale_ratio = true;
 
+  bool show_open_dialogue = false;
+
+  // Render model window at a fixed position
+  constexpr float model_window_width = 300.0;
+  constexpr float main_menu_bar_height = 20.0;
+  ImVec2 model_window_pos = ImVec2(
+      static_cast<float>(settings::window_resolution.w) - model_window_width,
+      main_menu_bar_height);
+  ImVec2 model_window_size = ImVec2(
+      model_window_width,
+      static_cast<float>(settings::window_resolution.h) - main_menu_bar_height);
+
   while (!should_quit) {
     // Check for window events
     if (SDL_PollEvent(&e) != 0) {
@@ -122,6 +156,27 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
             settings::window_resolution = {e.window.data1, e.window.data2};
           }
           aspect_ratio = e.window.data1 / static_cast<double>(e.window.data2);
+
+          // Set model window position
+          if (static_cast<bool>(settings::fullscreen)) {
+            model_window_pos =
+                ImVec2(static_cast<float>(settings::fullscreen_resolution.w) -
+                           model_window_width,
+                       main_menu_bar_height);
+            model_window_size =
+                ImVec2(model_window_width,
+                       static_cast<float>(settings::fullscreen_resolution.h) -
+                           main_menu_bar_height);
+          } else {
+            model_window_pos =
+                ImVec2(static_cast<float>(settings::window_resolution.w) -
+                           model_window_width,
+                       main_menu_bar_height);
+            model_window_size =
+                ImVec2(model_window_width,
+                       static_cast<float>(settings::window_resolution.h) -
+                           main_menu_bar_height);
+          }
           break;
         }
       case SDL_KEYDOWN:
@@ -131,24 +186,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
                                 (static_cast<unsigned int>(KMOD_LALT) |
                                  static_cast<unsigned int>(KMOD_RALT)))) {
             // Handle fullscreen toggle
-            switch (settings::fullscreen) {
-            case 0:
-              settings::fullscreen = SDL_WINDOW_FULLSCREEN;
-              SDL_DisplayMode dm;
-              SDL_GetDesktopDisplayMode(0, &dm);
-              SDL_SetWindowSize(window.get(), dm.w, dm.h);
-              SDL_SetWindowFullscreen(window.get(), settings::fullscreen);
-              break;
-            case SDL_WINDOW_FULLSCREEN:
-            case SDL_WINDOW_FULLSCREEN_DESKTOP:
-              settings::fullscreen = 0;
-              SDL_SetWindowFullscreen(window.get(), settings::fullscreen);
-              SDL_SetWindowSize(window.get(), settings::window_resolution.w,
-                                settings::window_resolution.h);
-              break;
-            default:
-              break;
-            }
+            toggle_fullscreen(window);
           }
           break;
         }
@@ -200,40 +238,54 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     imgui.create_frame(window);
 
     // Open model window
-    ImGui::Begin("Open model");
+    if (show_open_dialogue) {
+      ImGui::Begin("Open model", &show_open_dialogue);
 
-    ImGui::InputTextWithHint("Model name", "Enter unique model name...",
-                             model_name.data(), model_name.size());
+      ImGui::InputTextWithHint("Model name", "Enter a model name...",
+                               model_name.data(), model_name.size());
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
-    ImGui::Text("Choose a loader");
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+      ImGui::Text("Choose a loader");
 
-    if (ImGui::RadioButton("OBJ loader", loader == LOADER_OBJ)) {
-      loader = LOADER_OBJ;
+      if (ImGui::RadioButton("OBJ loader", loader == LOADER_OBJ)) {
+        loader = LOADER_OBJ;
+      }
+      ImGui::SameLine();
+      if (ImGui::RadioButton("Assimp loader (fbx only)",
+                             loader == LOADER_ASSIMP)) {
+        loader = LOADER_ASSIMP;
+      }
+
+      ImGui::InputTextWithHint("Model location", "Enter file location...",
+                               file_str.data(), file_str.size());
+      if (loader == LOADER_ASSIMP) {
+        ImGui::InputTextWithHint("Albedo map location",
+                                 "Enter file location...", albedo_str.data(),
+                                 albedo_str.size());
+      }
+
+      if (ImGui::Button("Open")) {
+        auto &model = resource_manager.load_model(loader, file_str.data(),
+                                                  albedo_str.data());
+        model.settings.name = std::string(model_name.data());
+        show_open_dialogue = false;
+      }
+
+      ImGui::End();
     }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Assimp loader (fbx only)",
-                           loader == LOADER_ASSIMP)) {
-      loader = LOADER_ASSIMP;
-    }
 
-    ImGui::InputTextWithHint("Model location", "Enter file location...",
-                             file_str.data(), file_str.size());
-    if (loader == LOADER_ASSIMP) {
-      ImGui::InputTextWithHint("Albedo map location", "Enter file location...",
-                               albedo_str.data(), albedo_str.size());
-    }
-
-    if (ImGui::Button("Open")) {
-      auto &model = resource_manager.load_model(loader, file_str.data(),
-                                                albedo_str.data());
-      model.settings.name = std::string(model_name.data());
-    }
-
-    ImGui::End();
+    // Render model window at a fixed position
+    ImGui::SetNextWindowPos(model_window_pos);
+    ImGui::SetNextWindowSize(model_window_size);
 
     // Models view
-    ImGui::Begin("Models");
+    constexpr unsigned int STATIC_WINDOW_FLAGS =
+        static_cast<unsigned int>(ImGuiWindowFlags_NoResize) |
+        static_cast<unsigned int>(ImGuiWindowFlags_NoCollapse) |
+        static_cast<unsigned int>(ImGuiWindowFlags_NoMove);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0F);
+    ImGui::Begin("Models", nullptr, STATIC_WINDOW_FLAGS);
+    ImGui::PopStyleVar();
     for (auto &&model : models) {
       auto &scale = model.settings.scale;
       auto &offset = model.settings.offset;
@@ -286,6 +338,25 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
       ImGui::PopID();
     }
     ImGui::End();
+
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Open", "Ctrl+O")) {
+          show_open_dialogue = true;
+        }
+
+        if (ImGui::MenuItem("Fullscreen", "Alt-Enter",
+                            static_cast<bool>(settings::fullscreen))) {
+          toggle_fullscreen(window);
+        }
+
+        if (ImGui::MenuItem("Quit")) {
+          should_quit = true;
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::EndMainMenuBar();
+    }
 
     // Render ImGui
     imgui.render();
