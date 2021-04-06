@@ -5,8 +5,8 @@
 namespace gl {
 
 template <typename T>
-Buffer<T>::Buffer(const GLenum &buffer_type, const std::vector<T> &data)
-    : buffer_type_(buffer_type), data_(data) {
+Buffer<T>::Buffer(const GLenum &buffer_type, std::vector<T> &&data)
+    : buffer_type_(buffer_type), data_(std::move(data)) {
   glGenBuffers(1, &buf_);
 }
 template <typename T> Buffer<T>::~Buffer() { glDeleteBuffers(1, &buf_); }

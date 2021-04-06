@@ -67,7 +67,7 @@ private:
 
 template <typename T> struct Buffer {
   Buffer() = default;
-  Buffer(const GLenum &buffer_type, const std::vector<T> &data);
+  Buffer(const GLenum &buffer_type, std::vector<T> &&data);
   ~Buffer();
 
   Buffer(const Buffer &) = delete;

@@ -116,7 +116,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Game loop
   SDL_Event e;
   bool should_quit = false;
-  auto t_start = std::chrono::high_resolution_clock::now();
+  auto t_start = std::chrono::steady_clock::now();
 
   std::array<char, settings::file_str_size> file_str{};
   std::array<char, settings::file_str_size> albedo_str{};
@@ -215,7 +215,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
     }
 
     // Clock to rotate models
-    auto t_now = std::chrono::high_resolution_clock::now();
+    auto t_now = std::chrono::steady_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(t_now - t_start);
 

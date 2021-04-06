@@ -14,7 +14,7 @@ struct ResourceManager {
       -> ResourceManager & = delete;
 
   template <typename... Args> auto load_model(Args &&... args) -> Model &;
-  void load_shaders(const std::string_view, const std::string_view);
+  void load_shaders(std::string_view, std::string_view);
 
   void render_all();
 

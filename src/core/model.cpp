@@ -96,11 +96,13 @@ void Model::set_layout() {
 }
 
 void Model::set_offset(const glm::dvec3 &offset) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
   settings.offset = {offset.x, offset.y, offset.z};
   offset_ = offset;
 }
 auto Model::get_offset() -> const glm::dvec3 & { return offset_; }
 void Model::set_scale(const glm::dvec3 &scale) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
   settings.scale = {scale.x, scale.y, scale.z};
   scale_ = scale;
 }

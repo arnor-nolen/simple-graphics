@@ -11,6 +11,6 @@ void parse_model(const std::vector<char> &data,
 void parse_model_assimp(const std::vector<char> &data,
                         std::vector<gl::Element> &elements,
                         std::vector<gl::Vertex> &vertices,
-                        const std::string_view file_type, gl::Texture &texture,
-                        const std::string_view texture_path);
+                        std::string_view file_type, gl::Texture &texture,
+                        std::string_view texture_path);
 } // namespace parser

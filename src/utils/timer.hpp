@@ -5,7 +5,7 @@
 
 struct Timer {
   Timer();
-  explicit Timer(const std::string_view &str);
+  explicit Timer(std::string_view str);
   ~Timer();
 
   Timer(const Timer &) = delete;
@@ -16,6 +16,6 @@ struct Timer {
   void stop() noexcept;
 
 private:
-  std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
+  std::chrono::time_point<std::chrono::steady_clock> start_time_;
   std::string str_;
 };
