@@ -3,9 +3,7 @@
 #include "utils/primitives.hpp"
 
 namespace parser::mtl {
-template <typename Container>
-auto parse(const Container &data, Color &color, std::string &texture_path)
-    -> bool;
+template <typename Container> auto parse(const Container &data);
 } // namespace parser::mtl
 
 #include "utils/parsers/mtl_parser_impl.hpp"

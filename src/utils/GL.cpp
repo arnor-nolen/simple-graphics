@@ -127,7 +127,7 @@ VertexArrayObject::VertexArrayObject() {
 }
 VertexArrayObject::~VertexArrayObject() { glDeleteVertexArrays(1, &vao_); }
 
-Texture::Texture(const std::string &path) {
+Texture::Texture(const std::string_view path) {
   // Load SDL_image surface from file
   auto surface = load_image(path);
   create(surface->w, surface->h, surface->pixels);

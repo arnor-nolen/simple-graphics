@@ -8,10 +8,7 @@
 
 namespace parser::obj {
 
-template <typename Container>
-auto parse(const Container &data, std::vector<Point> &points,
-           std::vector<TextureCoords> &uvs, std::vector<Face> &faces,
-           Color &color, std::string &texture_path) -> bool {
+template <typename Container> auto parse(const Container &data) {
 
   namespace x3 = boost::spirit::x3;
 
@@ -27,10 +24,17 @@ auto parse(const Container &data, std::vector<Point> &points,
   const auto lex_mtl = x3::lit("mtllib") >> lex_string_no_eol;
   const auto lex_uv = x3::lit("vt") >> double_ >> double_;
 
-  auto lambda_mtl = [&](auto &ctx) {
+  Color color = {1.0, 1.0, 1.0};
+  std::string texture_path;
+
+  std::vector<Point> points;
+  std::vector<TextureCoords> uvs;
+  std::vector<Face> faces;
+
+  auto lambda_mtl = [&color, &texture_path](auto &ctx) {
     std::string mtl_path = x3::_attr(ctx);
     auto mtl_file = load_file(mtl_path);
-    parser::mtl::parse(mtl_file, color, texture_path);
+    std::tie(color, texture_path) = parser::mtl::parse(mtl_file);
   };
 
   auto lambda_vertex = [&](auto &ctx) {
@@ -66,11 +70,14 @@ auto parse(const Container &data, std::vector<Point> &points,
                                 x3::eol,
                             x3::ascii::blank);
 
-  // We didn't get a match
-  if (first != last) {
-    return false;
+  // We weren't able to parse
+  if (!r) {
   }
 
-  return r;
+  // We didn't get a match
+  if (first != last) {
+  }
+
+  return std::make_tuple(points, uvs, faces, color, texture_path);
 }
 } // namespace parser::obj

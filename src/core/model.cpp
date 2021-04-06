@@ -13,19 +13,22 @@ Model::Model(std::vector<gl::Element> &elements,
 Model::Model(loader_enum loader, const std::string_view path,
              const std::string_view texture_path) {
   auto file = load_file(path);
+
   gl::Texture texture;
-  auto elements = std::vector<gl::Element>();
-  auto vertices = std::vector<gl::Vertex>();
+  std::vector<gl::Element> elements;
+  std::vector<gl::Vertex> vertices;
 
   switch (loader) {
   case LOADER_OBJ:
-    parser::parse_model(file, elements, vertices, texture);
+    std::tie(elements, vertices, texture) = parser::parse_model(file);
     break;
   case LOADER_ASSIMP:
-    parser::parse_model_assimp(file, elements, vertices, "fbx", texture,
-                               texture_path);
+    std::tie(elements, vertices, texture) =
+        parser::parse_model_assimp(file, "fbx", texture_path);
     break;
   default:
+    elements = std::vector<gl::Element>();
+    vertices = std::vector<gl::Vertex>();
     break;
   }
   ebo_ = gl::Buffer<gl::Element>(GL_ELEMENT_ARRAY_BUFFER, std::move(elements));

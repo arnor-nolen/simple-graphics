@@ -103,7 +103,7 @@ private:
 
 struct Texture {
   Texture() = default;
-  explicit Texture(const std::string &path);
+  Texture(std::string_view path);
   Texture(size_t width, size_t height, void *pixels);
   ~Texture();
 

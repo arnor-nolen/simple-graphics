@@ -4,21 +4,19 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <tuple>
 
 namespace parser {
-void parse_model(const std::vector<char> &data,
-                 std::vector<gl::Element> &elements,
-                 std::vector<gl::Vertex> &vertices, gl::Texture &texture) {
+auto parse_model(const std::vector<char> &data)
+    -> std::tuple<std::vector<gl::Element>, std::vector<gl::Vertex>,
+                  gl::Texture> {
   Timer timer("Parsing both OBJ and MTL files took ");
 
-  Color color = {1.0, 1.0, 1.0};
-  std::vector<Point> points;
-  std::vector<parser::obj::TextureCoords> uvs;
-  std::vector<parser::obj::Face> faces;
-  std::string texture_path;
-  parser::obj::parse(data, points, uvs, faces, color, texture_path);
+  auto [points, uvs, faces, color, texture_path] = parser::obj::parse(data);
 
-  texture = gl::Texture(texture_path);
+  auto elements = std::vector<gl::Element>();
+  auto vertices = std::vector<gl::Vertex>();
+  auto texture = gl::Texture(texture_path);
 
   for (const auto &face : faces) {
     auto v = std::array<gl::Vertex, 3>();
@@ -40,14 +38,19 @@ void parse_model(const std::vector<char> &data,
     }
     elements.push_back(e);
   }
+  return std::make_tuple(std::move(elements), std::move(vertices),
+                         std::move(texture));
 }
 
-void parse_model_assimp(const std::vector<char> &data,
-                        std::vector<gl::Element> &elements,
-                        std::vector<gl::Vertex> &vertices,
-                        const std::string_view file_type, gl::Texture &texture,
-                        const std::string_view texture_path) {
+auto parse_model_assimp(const std::vector<char> &data,
+                        const std::string_view file_type,
+                        const std::string_view texture_path)
+    -> std::tuple<std::vector<gl::Element>, std::vector<gl::Vertex>,
+                  gl::Texture> {
   Timer timer("Parsing assimp file took ");
+
+  auto elements = std::vector<gl::Element>();
+  auto vertices = std::vector<gl::Vertex>();
 
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFileFromMemory(
@@ -58,7 +61,7 @@ void parse_model_assimp(const std::vector<char> &data,
     throw std::runtime_error(error);
   }
 
-  texture = gl::Texture(texture_path.data());
+  auto texture = gl::Texture(texture_path);
 
   for (size_t i = 0; i < scene->mNumMeshes; ++i) {
     const aiMesh *mesh = scene->mMeshes[i];
@@ -89,5 +92,7 @@ void parse_model_assimp(const std::vector<char> &data,
       vertices.push_back(v);
     }
   }
+  return std::make_tuple(std::move(elements), std::move(vertices),
+                         std::move(texture));
 }
 } // namespace parser
