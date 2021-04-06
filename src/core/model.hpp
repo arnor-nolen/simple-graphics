@@ -13,8 +13,8 @@ struct Model {
   Model(std::vector<gl::Element> &elements, std::vector<gl::Vertex> &vertices,
         gl::Texture &texture);
 
-  Model(loader_enum loader, std::string_view path,
-        std::string_view texture_path = nullptr);
+  Model(loader_enum loader, const std::string_view path,
+        const std::string_view texture_path = nullptr);
 
   ~Model() = default;
 

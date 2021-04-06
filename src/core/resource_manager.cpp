@@ -8,8 +8,8 @@ void ResourceManager::render_all() {
 
 auto ResourceManager::get_models() -> std::vector<Model> & { return models_; }
 
-void ResourceManager::load_shaders(std::string_view vert_path,
-                                   std::string_view frag_path) {
+void ResourceManager::load_shaders(const std::string_view vert_path,
+                                   const std::string_view frag_path) {
   std::vector<gl::Shader> shaders;
   shaders.emplace_back(gl::Shader(GL_VERTEX_SHADER));
   shaders.emplace_back(gl::Shader(GL_FRAGMENT_SHADER));

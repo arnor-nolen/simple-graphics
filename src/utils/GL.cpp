@@ -37,7 +37,7 @@ auto Shader::operator=(Shader &&other) noexcept -> Shader & {
 }
 
 void Shader::swap(Shader &other) { std::swap(this->shader_, other.shader_); }
-void Shader::load(std::string_view path) {
+void Shader::load(const std::string_view path) {
   auto source = load_file(path);
   compile(source);
 }
