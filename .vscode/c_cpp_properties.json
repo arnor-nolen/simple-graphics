@@ -15,7 +15,8 @@
       "defines": [],
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "intelliSenseMode": "clang-x64"
+      "intelliSenseMode": "clang-x64",
+      "configurationProvider": "ms-vscode.cmake-tools"
     },
     {
       "name": "Linux",
@@ -23,7 +24,8 @@
       "defines": [],
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "intelliSenseMode": "clang-x64"
+      "intelliSenseMode": "clang-x64",
+      "configurationProvider": "ms-vscode.cmake-tools"
     }
   ],
   "version": 4
