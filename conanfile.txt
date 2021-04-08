@@ -8,7 +8,10 @@ assimp/5.0.1
 imgui/1.79
 
 [imports]
-./res/bindings, imgui_impl_sdl.cpp -> ../src/bindings
-./res/bindings, imgui_impl_opengl3.cpp -> ../src/bindings
-./res/bindings, imgui_impl_sdl.h -> ../src/bindings
-./res/bindings, imgui_impl_opengl3.h -> ../src/bindings
+./res/bindings, imgui_impl_sdl.cpp -> ../../src/bindings
+./res/bindings, imgui_impl_opengl3.cpp -> ../../src/bindings
+./res/bindings, imgui_impl_sdl.h -> ../../src/bindings
+./res/bindings, imgui_impl_opengl3.h -> ../../src/bindings
+
+[generators]
+cmake

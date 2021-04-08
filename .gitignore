@@ -1,6 +1,3 @@
-# Ignore VSCode settings file for clang-tidy compatibility
-.vscode/settings.json
-
 # MacOS
 .DS_Store
 
