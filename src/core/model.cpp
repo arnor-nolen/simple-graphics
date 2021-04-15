@@ -19,10 +19,10 @@ Model::Model(loader_enum loader, const std::string_view path,
   std::vector<gl::Vertex> vertices;
 
   switch (loader) {
-  case LOADER_OBJ:
+  case loader_enum::LOADER_OBJ:
     std::tie(elements, vertices, texture) = parser::parse_model(file);
     break;
-  case LOADER_ASSIMP:
+  case loader_enum::LOADER_ASSIMP:
     std::tie(elements, vertices, texture) =
         parser::parse_model_assimp(file, "fbx", texture_path);
     break;

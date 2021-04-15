@@ -83,9 +83,9 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   // Loading resources
   resource_manager.load_shaders("./src/shaders/shader.vert",
                                 "./src/shaders/shader.frag");
-  auto &model1 =
-      resource_manager.load_model(LOADER_ASSIMP, "./resources/AK-47.fbx",
-                                  "./resources/textures/Ak-47_Albedo.png");
+  auto &model1 = resource_manager.load_model(
+      loader_enum::LOADER_ASSIMP, "./resources/AK-47.fbx",
+      "./resources/textures/Ak-47_Albedo.png");
   // resource_manager.load_model("./resources/lowpoly_city_triangulated.obj");
 
   auto &models = resource_manager.get_models();
@@ -104,8 +104,6 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
   constexpr auto scene_center = glm::dvec3(0);
   constexpr auto up_direction = glm::dvec3(0, 1, 0);
 
-  constexpr auto identity_matrix = glm::dmat4(1.0);
-
   // Calculate View matrix
   glm::dmat4 view_matrix =
       glm::lookAt(camera_position, scene_center, up_direction);
@@ -123,7 +121,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
 
   std::array<char, settings::file_str_size> model_name{};
 
-  loader_enum loader = LOADER_OBJ;
+  loader_enum loader = loader_enum::LOADER_OBJ;
   bool preserve_scale_ratio = true;
 
   bool show_open_dialogue = false;
@@ -247,18 +245,18 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) -> int try {
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
       ImGui::Text("Choose a loader");
 
-      if (ImGui::RadioButton("OBJ loader", loader == LOADER_OBJ)) {
-        loader = LOADER_OBJ;
+      if (ImGui::RadioButton("OBJ loader", loader == loader_enum::LOADER_OBJ)) {
+        loader = loader_enum::LOADER_OBJ;
       }
       ImGui::SameLine();
       if (ImGui::RadioButton("Assimp loader (fbx only)",
-                             loader == LOADER_ASSIMP)) {
-        loader = LOADER_ASSIMP;
+                             loader == loader_enum::LOADER_ASSIMP)) {
+        loader = loader_enum::LOADER_ASSIMP;
       }
 
       ImGui::InputTextWithHint("Model location", "Enter file location...",
                                file_str.data(), file_str.size());
-      if (loader == LOADER_ASSIMP) {
+      if (loader == loader_enum::LOADER_ASSIMP) {
         ImGui::InputTextWithHint("Albedo map location",
                                  "Enter file location...", albedo_str.data(),
                                  albedo_str.size());

@@ -21,8 +21,8 @@ struct ResourceManager {
   auto get_models() -> std::vector<Model> &;
 
 private:
-  std::vector<Model> models_;
   gl::Program program_;
+  std::vector<Model> models_;
 };
 
 #include "core/resource_manager_impl.hpp"

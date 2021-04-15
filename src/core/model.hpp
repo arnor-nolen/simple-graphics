@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <string_view>
 
-enum loader_enum { LOADER_OBJ, LOADER_ASSIMP };
+enum struct loader_enum { LOADER_OBJ, LOADER_ASSIMP };
 
 struct Model {
   Model() = default;
